@@ -1,0 +1,2475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Glowtide — AI工作台</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f6f8fb;--bg2:#eef2f7;--card:#ffffff;--card2:#f3f6fa;
+  --border:#e6eaf0;--border2:#d6dde7;
+  --text:#24303f;--muted:#5f6b7a;--dim:#97a3b4;
+  --purple:#7a6fd0;--purple-bg:rgba(122,111,208,.10);
+  --gold:#dfa03c;--gold-bg:rgba(223,160,60,.12);
+  --blue:#4a90d9;--blue-bg:rgba(74,144,217,.10);
+  --green:#3fa978;--green-bg:rgba(63,169,120,.10);
+  --red:#d9534f;--red-bg:rgba(217,83,79,.08);
+  --cyan:#4a90d9;--cyan-bg:rgba(74,144,217,.10);
+  --orange:#e8892e;--orange-bg:rgba(232,137,46,.12);
+}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+a{color:var(--cyan);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.app{max-width:1200px;margin:0 auto;padding:20px 24px 60px}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:28px}
+.header h1{font-size:20px;font-weight:700;letter-spacing:.5px}
+.header h1 span{color:var(--blue);font-weight:800}
+.header .meta{font-size:12px;color:var(--dim)}
+
+.nav-back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;margin-bottom:18px;cursor:pointer;transition:.15s}
+.nav-back:hover{color:var(--text)}
+
+.sec-title{font-size:15px;font-weight:700;color:var(--muted);margin:32px 0 14px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Hero — Pipeline Visualization */
+.pipeline{display:flex;align-items:center;justify-content:center;gap:0;margin:24px 0 36px;flex-wrap:wrap}
+.pipe-step{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:16px 20px;border-radius:12px;transition:all .2s;min-width:140px;text-align:center}
+.pipe-step:hover{background:var(--card2)}
+.pipe-step .pipe-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;transition:transform .2s}
+.pipe-step:hover .pipe-icon{transform:scale(1.1)}
+.pipe-step[data-s="1"] .pipe-icon{background:var(--purple-bg)}
+.pipe-step[data-s="2"] .pipe-icon{background:var(--gold-bg)}
+.pipe-step[data-s="3"] .pipe-icon{background:var(--blue-bg)}
+.pipe-step[data-s="4"] .pipe-icon{background:var(--green-bg)}
+.pipe-step .pipe-name{font-size:13px;font-weight:700}
+.pipe-step .pipe-desc{font-size:11px;color:var(--dim)}
+.pipe-arrow{color:var(--dim);font-size:20px;flex-shrink:0;margin:0 -4px}
+@media(max-width:640px){.pipe-arrow{display:none}.pipeline{gap:8px}.pipe-step{min-width:auto;padding:10px 14px}}
+
+/* Stage Cards Grid */
+.stage-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:32px}
+@media(max-width:768px){.stage-grid{grid-template-columns:1fr}}
+.stage-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 24px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.04),0 1px 3px rgba(15,23,42,.05)}
+.stage-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 6px 20px rgba(15,23,42,.09)}
+.stage-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stage-card[data-stage="1"]::before{background:var(--purple)}
+.stage-card[data-stage="2"]::before{background:var(--gold)}
+.stage-card[data-stage="3"]::before{background:var(--blue)}
+.stage-card[data-stage="4"]::before{background:var(--green)}
+.stage-card .num{font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:6px}
+.stage-card[data-stage="1"] .num{color:var(--purple)}
+.stage-card[data-stage="2"] .num{color:var(--gold)}
+.stage-card[data-stage="3"] .num{color:var(--blue)}
+.stage-card[data-stage="4"] .num{color:var(--green)}
+.stage-card h2{font-size:17px;margin-bottom:8px;font-weight:700}
+.stage-card p{font-size:13px;color:var(--muted);margin-bottom:12px}
+.stage-card .wf-count{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:3px 10px;border-radius:20px;font-weight:600}
+.stage-card[data-stage="1"] .wf-count{background:var(--purple-bg);color:var(--purple)}
+.stage-card[data-stage="2"] .wf-count{background:var(--gold-bg);color:var(--gold)}
+.stage-card[data-stage="3"] .wf-count{background:var(--blue-bg);color:var(--blue)}
+.stage-card[data-stage="4"] .wf-count{background:var(--green-bg);color:var(--green)}
+
+/* Pain vs Solution */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0 32px}
+@media(max-width:768px){.compare-grid{grid-template-columns:1fr}}
+.compare-card{border-radius:10px;padding:18px 20px}
+.compare-card.pain{background:var(--red-bg);border:1px solid rgba(217,83,79,.25)}
+.compare-card.solution{background:var(--green-bg);border:1px solid rgba(63,169,120,.25)}
+.compare-card h3{font-size:14px;font-weight:700;margin-bottom:10px}
+.compare-card.pain h3{color:var(--red)}
+.compare-card.solution h3{color:var(--green)}
+.compare-card ul{list-style:none;padding:0}
+.compare-card li{font-size:13px;color:var(--muted);padding:4px 0;padding-left:20px;position:relative}
+.compare-card.pain li::before{content:'✗';position:absolute;left:0;color:var(--red);font-weight:700}
+.compare-card.solution li::before{content:'✓';position:absolute;left:0;color:var(--green);font-weight:700}
+
+/* Workflow List */
+.wf-list{display:flex;flex-direction:column;gap:10px}
+.wf-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:16px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.wf-card:hover{border-color:var(--border2);background:var(--card2)}
+.wf-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.wf-card[data-stage="1"] .wf-icon{background:var(--purple-bg);color:var(--purple)}
+.wf-card[data-stage="2"] .wf-icon{background:var(--gold-bg);color:var(--gold)}
+.wf-card[data-stage="3"] .wf-icon{background:var(--blue-bg);color:var(--blue)}
+.wf-card[data-stage="4"] .wf-icon{background:var(--green-bg);color:var(--green)}
+.wf-info{flex:1;min-width:0}
+.wf-info h3{font-size:14px;font-weight:600;margin-bottom:2px}
+.wf-info p{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wf-arrow{color:var(--dim);font-size:14px}
+
+/* Workflow Detail */
+.wf-detail{max-width:860px}
+.wf-header{margin-bottom:24px}
+.wf-header .tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:10px}
+.wf-header .tag[data-s="1"]{background:var(--purple-bg);color:var(--purple)}
+.wf-header .tag[data-s="2"]{background:var(--gold-bg);color:var(--gold)}
+.wf-header .tag[data-s="3"]{background:var(--blue-bg);color:var(--blue)}
+.wf-header .tag[data-s="4"]{background:var(--green-bg);color:var(--green)}
+.wf-header h1{font-size:24px;font-weight:800;margin-bottom:6px}
+.wf-header .desc{font-size:14px;color:var(--muted)}
+
+.step-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:12px;position:relative;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.step-card .step-num{position:absolute;top:-1px;left:20px;background:var(--purple);color:#fff;font-size:11px;font-weight:700;padding:2px 10px;border-radius:0 0 6px 6px}
+.step-card[data-s="2"] .step-num{background:var(--gold)}
+.step-card[data-s="3"] .step-num{background:var(--blue)}
+.step-card[data-s="4"] .step-num{background:var(--green)}
+.step-card h3{font-size:15px;font-weight:700;margin:8px 0 8px}
+.step-card li{font-size:13px;color:var(--muted);line-height:1.7}
+.step-card ul{padding-left:18px;margin:6px 0}
+.step-card li{margin-bottom:4px}
+
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:12px 0}
+.tool-item{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:12px}
+.tool-item .t-name{font-weight:700;color:var(--text);margin-bottom:2px}
+.tool-item .t-desc{color:var(--dim)}
+.tool-item .t-type{display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;margin-top:4px;font-weight:600}
+.t-type.skill{background:var(--purple-bg);color:var(--purple)}
+.t-type.agent{background:var(--blue-bg);color:var(--blue)}
+.t-type.qw{background:var(--green-bg);color:var(--green)}
+.t-type.fbi{background:var(--gold-bg);color:var(--gold)}
+
+.pitfall{background:var(--orange-bg);border-left:3px solid var(--orange);padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0;font-size:13px;color:var(--text)}
+.pitfall strong{color:var(--orange)}
+
+.prompt-box{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:14px 16px;margin:10px 0;position:relative}
+.prompt-box::before{content:'PROMPT';position:absolute;top:-8px;left:12px;font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--cyan);background:var(--bg2);padding:0 6px}
+.prompt-box code{font-family:"SF Mono","Fira Code",monospace;font-size:12px;color:var(--text);white-space:pre-wrap;display:block;line-height:1.6}
+.launch-btn{display:inline-flex;align-items:center;gap:6px;background:var(--blue);border:none;color:#fff;font-size:12px;font-weight:700;padding:6px 16px;border-radius:6px;cursor:pointer;margin-top:8px;transition:.2s}
+.launch-btn:hover{background:#3d7fd6;transform:translateY(-1px)}
+.launch-btn.launched{background:var(--green)}
+.launch-btn .ico{font-size:14px}
+
+/* Skill badge */
+.skill-badge{margin-top:8px;display:inline-flex;align-items:center;gap:6px;background:var(--purple-bg);border:1px solid rgba(122,111,208,.30);border-radius:6px;padding:4px 12px;font-size:12px;color:var(--purple);cursor:pointer}
+.skill-badge:hover{background:rgba(122,111,208,.14)}
+.skill-badge code{font-family:monospace;color:#6d5fc7}
+
+/* Quick Entry */
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:16px}
+.quick-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer;transition:.15s}
+.quick-item:hover{border-color:var(--border2);background:var(--card2)}
+.quick-item .qi-icon{font-size:24px;margin-bottom:6px}
+.quick-item .qi-name{font-size:13px;font-weight:600}
+.quick-item .qi-desc{font-size:11px;color:var(--dim);margin-top:2px}
+
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--green);color:#fff;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999;transition:transform .35s cubic-bezier(.22,1,.36,1);pointer-events:none;white-space:nowrap;box-shadow:0 8px 30px rgba(63,169,120,.30)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* Judge Form Panel */
+.judge-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin:16px 0}
+.judge-panel h3{font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.judge-panel h3 .jp-icon{font-size:20px}
+.judge-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:640px){.judge-row{grid-template-columns:1fr}}
+.judge-field{display:flex;flex-direction:column;gap:6px}
+.judge-field label{font-size:12px;font-weight:600;color:var(--muted)}
+.judge-field input,.judge-field select{background:#fff;border:1px solid var(--border2);border-radius:6px;padding:8px 12px;font-size:13px;color:var(--text);outline:none;transition:border .2s;box-shadow:inset 0 1px 2px rgba(15,23,42,.04)}
+.judge-field input:focus,.judge-field select:focus{border-color:var(--blue)}
+.judge-field select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.judge-checks{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.judge-check{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;transition:all .15s;user-select:none}
+.judge-check:hover{border-color:var(--border2);background:var(--card2)}
+.judge-check.active{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.judge-check input{display:none}
+.judge-btn{display:inline-flex;align-items:center;gap:6px;background:var(--blue);border:none;color:#fff;font-size:13px;font-weight:700;padding:8px 20px;border-radius:8px;cursor:pointer;margin-top:14px;transition:.2s}
+.judge-btn:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.judge-result{margin-top:16px;padding:16px;border-radius:10px;display:none}
+.judge-result.show{display:block}
+.judge-result.grade-a{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3)}
+.judge-result.grade-b{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3)}
+.judge-result.grade-c{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3)}
+.judge-result .jr-grade{font-size:32px;font-weight:800;line-height:1}
+.judge-result.grade-a .jr-grade{color:var(--green)}
+.judge-result.grade-b .jr-grade{color:var(--blue)}
+.judge-result.grade-c .jr-grade{color:var(--gold)}
+.judge-result .jr-label{font-size:13px;font-weight:700;margin:4px 0 8px}
+.judge-result .jr-criteria{font-size:12px;color:var(--muted);line-height:1.7}
+.judge-result .jr-action{margin-top:10px;padding-top:10px;border-top:1px solid rgba(15,23,42,.08);font-size:12px;color:var(--text)}
+.judge-result .jr-action strong{color:var(--cyan)}
+.judge-legend{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0 4px;font-size:11px}
+.judge-legend span{padding:3px 10px;border-radius:4px;font-weight:600}
+.judge-legend .la{background:rgba(16,185,129,.12);color:var(--green)}
+.judge-legend .lb{background:rgba(59,130,246,.12);color:var(--blue)}
+.judge-legend .lc{background:rgba(245,158,11,.12);color:var(--gold)}
+
+@media(max-width:640px){
+  .app{padding:12px 14px 40px}
+  .stage-grid{grid-template-columns:1fr}
+  .tool-grid{grid-template-columns:1fr}
+  .quick-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA — 4 Stages · 新签招商闭环
+// ═══════════════════════════════════════════════════
+const STAGES=[
+  {id:1,name:"开发客户",color:"purple",icon:"🔍",
+   desc:"多渠道智能获客 — 公海池·招聘·工商·自媒体·本地企业"},
+  {id:2,name:"线索管理",color:"gold",icon:"📋",
+   desc:"邀约·判客AB类·策略跟进 — AI驱动分层与定向触达"},
+  {id:3,name:"可行性报告",color:"blue",icon:"📊",
+   desc:"投入测算·案例匹配·报价方案·行业报告 — AI 3分钟生成"},
+  {id:4,name:"签约准备",color:"green",icon:"🤝",
+   desc:"资料核验·打款闭环 — 确保最后一步不掉链子"},
+  {id:5,name:"新商家·上线前",color:"blue",icon:"🆕",
+   desc:"0-30天基建期五件事 — 认证·信息·装修·发品·上线"},
+  {id:6,name:"新商家·上线后",color:"gold",icon:"🚀",
+   desc:"31-180天成长期五件事 — 铺品·知识库·橱窗·RFQ·广告"},
+];
+
+const WORKFLOWS=[
+  // ──────────────────────────────────────────────
+  // Stage 1: 开发客户 (6)
+  // ──────────────────────────────────────────────
+  {id:"sea-pool",stage:1,icon:"📞",skill:"customer-invite-script",
+   name:"公海池智能筛选",
+   desc:"AI自动筛选高意向号码，优先排序，通话后自动记录跟进状态",
+   fields:[
+     {key:'industry',label:'行业',type:'select',options:['制造业','五金配件','户外家具','储能设备','化工','纺织服装','食品机械','其他'],default:'制造业'},
+     {key:'capital',label:'注册资本下限(万)',type:'number',default:'100'},
+     {key:'years',label:'成立年限(年)',type:'number',default:'3'},
+     {key:'topN',label:'名单数量',type:'number',default:'20'},
+     {key:'target',label:'邀约目标',type:'select',options:['本周上门拜访','电话沟通','邀约参加活动'],default:'本周上门拜访'},
+     {key:'duration',label:'话术时长(分钟)',type:'number',default:'3'},
+   ],
+   steps:[
+     {title:"数据获取与清洗",detail:[
+       "从CRM公海池导出未跟进/长期未转化客户",
+       "按行业/规模/注册资本/成立年限筛选",
+       "剔除已签约/黑名单/无效号码",
+       "按「出口潜力评分」排序（进出口权+招聘外贸岗+1688店铺）"
+     ]},
+     {title:"智能拨打与记录",detail:[
+       "AI辅助生成开场话术（按行业定制）",
+       "通话后自动提取关键信息：需求/预算/决策人/竞品",
+       "自动判定A/B/C类并更新CRM",
+       "未接通自动排入下次拨打队列"
+     ]},
+     {title:"高意向快速通道",detail:[
+       "A类客户24h内推送上门邀约",
+       "B类客户进入7天电话跟进序列",
+       "C类客户进入月度唤醒池"
+     ]},
+   ],
+   pitfall:"公海池最大的问题是「盲目拨打」。必须先按出口潜力评分排序，优先打有进出口权+正在招外贸岗位的企业，接通率和意向度提升3倍以上。",
+   tools:[
+     {name:"Glowtide 话术生成",type:"qw",desc:"按行业生成电话邀约话术"},
+     {name:"企查查MCP",type:"qw",desc:"qcc-company — 企业信息快速查询"},
+     {name:"customer-invite-script",type:"skill",desc:"邀约话术自动生成"},
+     {name:"customer-segmentation",type:"skill",desc:"通话后自动ABCD分层"},
+   ],
+   prompts:[
+     "从公海池中筛选出有进出口权、注册资本>{capital}万、成立{years}年以上的{industry}企业，按出口潜力排序，输出Top{topN}名单",
+     "帮我生成针对{industry}老板的电话邀约话术，{duration}分钟以内，目标是约到{target}"
+   ]},
+
+  {id:"recruit-lead",stage:1,icon:"💼",skill:"customer-bg-brief",
+   name:"招聘网站定向抓取",
+   desc:"Agent监控新增招聘外贸岗位的企业，按行业/规模自动筛选推送",
+   fields:[
+     {key:'company',label:'公司名',type:'input',default:''},
+     {key:'city',label:'城市',type:'input',default:'郑州'},
+     {key:'job',label:'招聘岗位',type:'select',options:['外贸业务员','国际站运营','跨境电商'],default:'外贸业务员'},
+     {key:'capital',label:'注册资本下限(万)',type:'number',default:'200'},
+     {key:'years',label:'成立年限(年)',type:'number',default:'3'},
+     {key:'topN',label:'名单数量',type:'number',default:'10'},
+   ],
+   steps:[
+     {title:"信号捕捉",detail:[
+       "监控Boss直聘/智联/58等平台新增「外贸业务员」「国际站运营」「跨境电商」岗位",
+       "提取企业信息：公司名/行业/规模/地址",
+       "判断信号强度：招多人=高意向 / 招1人=试探 / 仅挂出=观望"
+     ]},
+     {title:"企业画像匹配",detail:[
+       "通过企查查MCP补全工商信息",
+       "检查是否有进出口权、1688店铺、国际站店铺",
+       "计算「招商适配分」：行业匹配度×规模适配度×出口信号强度"
+     ]},
+     {title:"推送与跟进",detail:[
+       "每日推送Top10高适配企业到客户经理",
+       "附带1页纸企业简报+建议话术",
+       "24h内首次电话触达"
+     ]},
+   ],
+   pitfall:"招外贸岗位=有出海意向，这是最强的实时信号。但要注意：有些企业只是在「试水」，招1个业务员看看效果。优先选择招2人以上或标注「急招」的企业。",
+   tools:[
+     {name:"企查查MCP",type:"qw",desc:"qcc-company — 企业信息补全"},
+     {name:"customer-bg-brief",type:"skill",desc:"1页纸企业简报生成"},
+   ],
+   prompts:[
+     "帮我查{company}的背景信息：工商信息、是否有进出口权、1688店铺、招聘动态，输出一份1页纸拜访准备简报",
+     "搜索{city}最近一周发布「{job}」招聘的企业，筛选注册资本>{capital}万且成立>{years}年的，输出Top{topN}名单"
+   ]},
+
+  {id:"new-reg",stage:1,icon:"🏭",skill:"customer-bg-brief",
+   name:"工商新注册企业监控",
+   desc:"每日抓取新注册含进出口权企业，自动匹配目标画像入库",
+   fields:[
+     {key:'city',label:'城市',type:'input',default:'郑州'},
+     {key:'days',label:'时间窗(天)',type:'number',default:'7'},
+     {key:'capital',label:'注册资本下限(万)',type:'number',default:'100'},
+     {key:'company',label:'新注册公司名',type:'input',default:''},
+   ],
+   steps:[
+     {title:"数据源监控",detail:[
+       "每日抓取工商局新注册企业数据",
+       "筛选条件：经营范围含「进出口」「国际贸易」「跨境电商」",
+       "按行业分类+注册资本排序"
+     ]},
+     {title:"画像匹配与评分",detail:[
+       "注册资本>100万 = 基础分+1",
+       "法人有外贸相关经验 = +2",
+       "注册地在产业带/外贸园区 = +2",
+       "经营范围含具体品类（非泛类）= +1"
+     ]},
+     {title:"即时推送",detail:[
+       "新注册7天内是最佳触达窗口",
+       "推送企业简报+建议话术给对应区域客户经理",
+       "首联话术侧重「恭喜开业+行业机会分享」"
+     ]},
+   ],
+   pitfall:"新注册企业7天内是黄金触达期。超过30天，客户可能已被同行或竞品锁定。首联不要直接推销，用「行业数据分享」切入。",
+   tools:[
+     {name:"企查查MCP",type:"qw",desc:"qcc-company — 新注册企业查询"},
+     {name:"customer-bg-brief",type:"skill",desc:"企业简报自动生成"},
+     {name:"customer-invite-script",type:"skill",desc:"新企业首联话术"},
+   ],
+   prompts:[
+     "查询{city}地区最近{days}天新注册的含「进出口」经营范围的企业，注册资本>{capital}万，按行业分类输出名单",
+     "帮我为{company}准备首联话术，以「恭喜开业+行业机会」切入，目标是约一次电话沟通"
+   ]},
+
+  {id:"local-export",stage:1,icon:"🗺️",skill:"customer-bg-brief",
+   name:"本地进出口企业开发",
+   desc:"定向抓取河南郑州等本地市场有进出口权企业，就近开发",
+   fields:[
+     {key:'city',label:'城市',type:'input',default:'郑州'},
+     {key:'district',label:'区域',type:'select',options:['全部','金水区','中原区','二七区','惠济区','高新区','管城区','经开区','航空港区'],default:'全部'},
+     {key:'industry',label:'行业',type:'input',default:'家具'},
+     {key:'topN',label:'名单数量',type:'number',default:'20'},
+   ],
+   steps:[
+     {title:"企业名录构建",detail:[
+       "从海关/商务局获取本地进出口权企业名录",
+       "补充企查查数据：注册资本/成立年限/出口额",
+       "按区域（金水/中原/二七/惠济/高新区）分组"
+     ]},
+     {title:"优先级排序",detail:[
+       "有进出口权但未开国际站 = 最高优先",
+       "有1688但无国际站 = 高优先",
+       "纯内销但行业适配 = 中优先",
+       "已有竞品平台 = 低优先但可切入"
+     ]},
+     {title:"线下触达",detail:[
+       "就近安排上门拜访（减少路途时间）",
+       "携带行业数据简报+同行案例",
+       "目标：首访建立信任 → 二访推进签约"
+     ]},
+   ],
+   pitfall:"本地企业最大的优势是「就近」——可以高频上门。冯轩昂的经验：目标纯粹，每天保证足够拜访量。本地企业优先安排上午拜访+下午跟进。",
+   tools:[
+     {name:"企查查MCP",type:"qw",desc:"qcc-company — 本地企业批量查询"},
+     {name:"customer-bg-brief",type:"skill",desc:"拜访前企业简报"},
+     {name:"customer-invite-script",type:"skill",desc:"上门邀约话术"},
+   ],
+   prompts:[
+     "查询{city}{district}有进出口权但未在阿里巴巴国际站开店的企业，按注册资本排序Top{topN}",
+     "帮我做一份{city}本地{industry}行业进出口企业开发名单，标注优先级和建议拜访路线"
+   ]},
+
+  {id:"media-lead",stage:1,icon:"📱",skill:"duanyin-video-script",formType:"media",
+   name:"自媒体获客",
+   desc:"选择平台（抖音/视频号/小红书）→ 填写行业/城市/会销信息 → AI生成对应风格内容",
+   steps:[
+     {title:"选择平台与内容类型",detail:[
+       "抖音 → 短视频脚本（口播/情景剧/产品展示），资深抖音博主风格",
+       "视频号 → 短视频脚本（偏商务/专业），资深视频号运营风格",
+       "小红书 → 图文种草文案，10年以上资深小红书运营风格"
+     ]},
+     {title:"填写内容要素",detail:[
+       "行业（如：户外家具/储能设备/五金配件）",
+       "所在城市（如：郑州/苏州/杭州/广州/深圳）",
+       "视频时长（30s/60s/90s/2min/3min）",
+       "获客方式：自然流量 or 会销投流",
+       "会销信息（如选投流）：活动日期/地点/主题"
+     ]},
+     {title:"AI生成+合规审核",detail:[
+       "根据平台+行业+城市自动匹配爆款脚本结构",
+       "融入会销活动信息（时间/地点/主题/价值点）",
+       "自动合规审核（广告法+平台限流词检查）",
+       "输出完整脚本/文案+拍摄建议+BGM推荐"
+     ]},
+   ],
+   pitfall:"两种获客方式的内容策略完全不同：自然流量侧重行业干货+痛点共鸣（长期信任建设），会销投流侧重活动价值+限时稀缺（短期转化）。抖音/视频号用视频脚本，小红书用图文种草，别搞混了。",
+   tools:[
+     {name:"duanyin-video-script",type:"skill",desc:"短视频脚本自动生成"},
+     {name:"content-compliance-audit",type:"skill",desc:"发布前合规审核"},
+     {name:"video-bgm-recommend",type:"skill",desc:"BGM匹配推荐"},
+   ],
+   prompts:[
+     "帮我写一个60秒抖音口播脚本，行业是[户外家具]，城市[郑州]，目的是为8月15日郑州阿里巴巴外贸峰会引流，目标人群是制造业老板",
+     "帮我写一篇小红书图文种草文案，行业是[储能设备]，城市[深圳]，资深小红书运营风格，主题是「一个人怎么做外贸」"
+   ]},
+
+  {id:"crm-input",stage:1,icon:"📥",skill:"cgs-batch-input",formType:"crm",
+   name:"CRM客户录入",
+   desc:"将公海/私海之外的新客户线索录入先富系统，支持单条和批量录入",
+   steps:[
+     {title:"信息填写",detail:[
+       "姓名：联系人真实姓名",
+       "电话：11位手机号（系统自动补0086国际区号）",
+       "公司名：全称（无公司名时填「个人」，系统自动转为「姓名+电话」格式）",
+       "信用代码：有则填统一社会信用代码，无则选「暂无」",
+       "地址：省-市-区 三级联动（默认河南-郑州-郑州）"
+     ]},
+     {title:"录入方式",detail:[
+       "单条录入：填完表单点击「生成录入指令」",
+       "批量录入：上传Excel文件（列：姓名/电话/公司名/信用代码/地址）",
+       "系统自动调用 cgs-batch-input Skill 执行录入"
+     ]},
+     {title:"录入结果",detail:[
+       "成功：客户已录入私海",
+       "捡入：客户在公海中被自动捡入私海",
+       "失败：记录原因（重复/格式错误/系统异常）"
+     ]},
+   ],
+   pitfall:"CRM分公海（区域共享）和私海（个人专属）。录入的客户默认进入你的私海。公司名为空时系统自动用「姓名+电话」格式。手机号必须11位，系统自动补0086前缀。录入前务必确认客户不在公海中（避免重复）。",
+   tools:[
+     {name:"cgs-batch-input",type:"skill",desc:"先富系统批量录入专家v3.0"},
+     {name:"qcc-company",type:"qw",desc:"企查查 — 查询公司信用代码"},
+   ],
+   prompts:[
+     "帮我把以下客户录入先富系统：\n姓名：秉芝\n电话：13838179135\n公司名：郑州秉蔚商贸有限公司\n信用代码：无\n地址：河南-郑州-郑州",
+     "帮我用Excel文件批量录入客户到先富系统，文件路径：[拖入Excel文件]"
+   ]},
+
+  // ──────────────────────────────────────────────
+  // Stage 2: 线索管理 (5)
+  // ──────────────────────────────────────────────
+  {id:"event-invite",stage:2,icon:"🎪",skill:"customer-invite-script",
+   name:"活动邀约",
+   desc:"AI根据客户画像匹配活动类型，自动发送邀约话术+跟进提醒",
+   fields:[
+     {key:'industry',label:'客户行业',type:'input',default:'五金'},
+     {key:'eventName',label:'活动名称',type:'input',default:'外贸出海沙龙'},
+     {key:'duration',label:'电话时长(分钟)',type:'number',default:'3'},
+     {key:'topN',label:'邀约数量',type:'number',default:'20'},
+   ],
+   steps:[
+     {title:"活动匹配",detail:[
+       "根据客户行业/规模/阶段匹配活动：会销/沙龙/行业峰会/线上直播",
+       "新线索→行业入门沙龙（低门槛建立信任）",
+       "B类客户→标杆分享会（案例刺激决策）",
+       "A类客户→1对1诊断会（临门一脚）"
+     ]},
+     {title:"邀约话术生成",detail:[
+       "AI按活动类型+客户画像生成个性化邀约话术",
+       "电话话术（3分钟）+ 微信跟进话术",
+       "强调活动价值（不是推销，是学习机会）",
+       "二选一法确认参加时间"
+     ]},
+     {title:"跟进闭环",detail:[
+       "活动前1天确认参加（防鸽子）",
+       "活动当天签到+互动记录",
+       "活动后24h内跟进反馈",
+       "有意向客户自动转入「上门邀约」流程"
+     ]},
+   ],
+   pitfall:"会销是冯轩昂的核心打法（Q1会销574次）。但会销不是目的——关键是会后24h内的跟进转化。活动结束不跟进=白参加。",
+   tools:[
+     {name:"customer-invite-script",type:"skill",desc:"活动邀约话术生成"},
+     {name:"management-assistant",type:"skill",desc:"活动提醒+跟进管理"},
+   ],
+   prompts:[
+     "帮我生成{industry}行业客户参加「{eventName}」的邀约话术，电话{duration}分钟+微信跟进模板",
+     "本周有一场{eventName}，帮我从客户库里筛选最适合邀约的{topN}个客户，按行业匹配度排序"
+   ]},
+
+  {id:"visit-invite",stage:2,icon:"🚗",skill:"customer-invite-script",
+   name:"上门邀约",
+   desc:"识别高意向客户，自动排期上门计划，推送最佳拜访时间",
+   fields:[
+     {key:'company',label:'公司名',type:'input',default:''},
+     {key:'contact',label:'联系人',type:'input',default:'老板'},
+     {key:'visitTime',label:'拜访时间',type:'input',default:'明天下午'},
+   ],
+   steps:[
+     {title:"高意向识别",detail:[
+       "信号判断：主动咨询价格/要求看案例/决策人参与/时间线明确",
+       "来源判断：会销后主动留联系方式>电话咨询>公海池",
+       "行业判断：正在招外贸岗+有进出口权+有1688店铺"
+     ]},
+     {title:"上门排期",detail:[
+       "A类客户：24h内约上门（越快越好）",
+       "路线规划：按区域分组，同区域客户串联拜访",
+       "每天目标：4-6次有效拜访",
+       "每次拜访前15分钟做客户背调"
+     ]},
+     {title:"拜访执行",detail:[
+       "前15分钟：了解客户生意（问>说）",
+       "中间20分钟：针对性展示价值",
+       "最后10分钟：推进下一步（签约/二访/可行性报告）",
+       "拜访后2h内完成闪记录入"
+     ]},
+   ],
+   pitfall:"新线索超过48小时未跟进，转化率下降60%以上。冯轩昂经验：目标纯粹，除了业务不做其他事，每天保证足够拜访量。上门前必须做背调——带着「答案」去拜访。",
+   tools:[
+     {name:"customer-invite-script",type:"skill",desc:"上门邀约话术"},
+     {name:"customer-bg-brief",type:"skill",desc:"上门前1页纸背调"},
+     {name:"awb-tandan-pingfen",type:"skill",desc:"谈单录音评分"},
+   ],
+   prompts:[
+     "帮我生成针对{company}{contact}的上门邀约话术，目标是约到{visitTime}拜访",
+     "帮我做{company}的拜访前背调，输出1页纸简报：工商信息+出口能力+线上表现+签约价值评级"
+   ]},
+
+  {id:"phone-judge",stage:2,icon:"⚖️",skill:"customer-segmentation",
+   name:"电话判客 A/B/C类",
+   desc:"通话后AI自动判定客户等级，统一标准，消除人为偏差",
+   fields:[
+     {key:'company',label:'公司名',type:'input',default:''},
+     {key:'industry',label:'行业',type:'input',default:''},
+     {key:'record',label:'电话沟通记录/客户列表',type:'textarea',placeholder:'粘贴通话记录或客户列表…',default:''},
+   ],
+   steps:[
+     {title:"五维判客模型",detail:[
+       "需求明确度：客户是否知道自己要什么产品/服务",
+       "预算状态：有没有预算/预算够不够/预算什么时候到位",
+       "决策链：是否已确认拍板人/决策流程",
+       "时间线：有没有明确的启动/采购时间节点",
+       "竞品对比：是否在对比其他平台/供应商"
+     ]},
+     {title:"自动判定规则",detail:[
+       "4维≥明确 → A类（高意向，24h内上门）",
+       "2-3维明确 → B类（中意向，7天内跟进）",
+       "1维明确 → C类（低意向，进入培育池）",
+       "全不明确或拒绝 → D类（月度唤醒）"
+     ]},
+     {title:"判定输出",detail:[
+       "AI输出判客结论+依据+建议动作",
+       "自动更新CRM客户等级",
+       "触发对应跟进策略（A→上门/B→电话/C→培育/D→唤醒）"
+     ]},
+   ],
+   pitfall:"判客标准不统一是最大的管理痛点。有人把「有兴趣」就当A类，有人把「有预算」才当A类。AI判客模型统一标准，消除人为偏差。",
+   tools:[
+     {name:"customer-segmentation",type:"skill",desc:"ABCD自动分层"},
+     {name:"customer-bg-brief",type:"skill",desc:"辅助判断企业背景"},
+   ],
+   prompts:[
+     "根据以下客户信息判定A/B/C类等级：\n公司：{company}\n行业：{industry}\n电话沟通记录：{record}\n输出：等级+判定依据+建议跟进动作",
+     "把这份客户列表按ABCD分层，并给每个层级制定下周跟进策略：\n{record}"
+   ]},
+
+  {id:"follow-strategy",stage:2,icon:"🎯",skill:"customer-segmentation",
+   name:"定向跟进策略",
+   desc:"A类3天上门·B类7天电话·C类培育池定期触达",
+   fields:[
+     {key:'level',label:'客户等级',type:'select',options:['A类','B类','C类'],default:'A类'},
+     {key:'company',label:'公司名',type:'input',default:''},
+     {key:'weeks',label:'培育周数',type:'number',default:'4'},
+   ],
+   steps:[
+     {title:"A类客户策略（高频逼单）",detail:[
+       "24h内电话确认需求+48h内上门拜访",
+       "上门携带：行业数据简报+同行案例+可行性报告",
+       "每2天1次跟进直到签约或降级",
+       "异议处理话术库自动匹配"
+     ]},
+     {title:"B类客户策略（价值培育）",detail:[
+       "7天内电话回访，了解最新需求变化",
+       "每周推送1次行业资讯/成功案例",
+       "每月邀约1次线下活动/沙龙",
+       "关注升级信号（主动询价/决策人参与→升A类）"
+     ]},
+     {title:"C类客户策略（存在感维护）",detail:[
+       "每2周1次轻触达（行业资讯/节日问候）",
+       "季度1次活动邀约（大促/行业峰会）",
+       "关注激活信号（打开推送/回复消息→升B类）"
+     ]},
+   ],
+   pitfall:"最大的管理黑洞是「只跟A类客户」。林秋月案例证明：B/C类客户维护好了，转介绍产出可能超过A类直签。分层不是一成不变——每月重新评估。",
+   tools:[
+     {name:"customer-segmentation",type:"skill",desc:"分层策略自动匹配"},
+     {name:"management-assistant",type:"skill",desc:"跟进提醒+日程管理"},
+     {name:"duanyin-video-script",type:"skill",desc:"生成培育内容（短视频）"},
+   ],
+   prompts:[
+     "帮我制定{level}客户{company}的3天逼单计划，包含上门话术+异议应对+签约推进节奏",
+     "帮我制定{level}客户{company}的{weeks}周培育计划，每周推送什么内容+什么时候电话回访"
+   ]},
+
+  {id:"judge-full",stage:2,icon:"⚖️",skill:"customer-segmentation",
+   name:"判客全流程",
+   desc:"通话/拜访后AI自动判定客户AB类等级，统一标准+触发跟进动作，消除人为偏差",
+   steps:[
+     {title:"信息采集（通话/拜访中）",detail:[
+       "五维信号采集：需求明确度/预算状态/决策链/时间线/竞品对比",
+       "关键提问清单：①做内销还是出口？②年出口额大概多少？③谁负责这块决策？④计划什么时候启动？⑤有没有对比过其他平台？",
+       "通话录音自动转写+关键信息提取"
+     ]},
+     {title:"AI判客模型（统一标准）",detail:[
+       "4维≥明确 → A类（高意向）：有明确需求+有预算+决策人已确认+时间线清晰",
+       "2-3维明确 → B类（中意向）：有需求但预算/时间未定",
+       "1维明确 → C类（低意向）：仅初步接触，需求不明",
+       "全不明确或拒绝 → D类（暂无意向）",
+       "AI输出判客结论+判定依据+建议动作，自动更新CRM"
+     ]},
+     {title:"判客→动作自动触发",detail:[
+       "A类 → 立即触发「上门邀约」流程（24h内上门）",
+       "B类 → 触发「定向跟进策略」（7天电话+案例推送）",
+       "C类 → 进入「培育池」（每2周轻触达）",
+       "D类 → 进入「唤醒池」（月度活动邀约）",
+       "判客结果自动关联跟进日历+提醒"
+     ]},
+   ],
+   pitfall:"判客标准不统一是最大的管理痛点——有人把「有兴趣」就当A类，有人把「有预算」才当A类。AI判客模型用五维标准统一判定，消除人为偏差。每次判客后必须明确下一步动作，不能停在「再看看」。",
+   tools:[
+     {name:"customer-segmentation",type:"skill",desc:"ABCD自动分层+跟进策略"},
+     {name:"customer-invite-script",type:"skill",desc:"判客后自动生成邀约话术"},
+     {name:"customer-bg-brief",type:"skill",desc:"辅助企业背景验证"},
+     {name:"management-assistant",type:"skill",desc:"判客结果→跟进提醒自动创建"},
+   ],
+   prompts:[
+     "根据以下客户沟通信息判定A/B/C/D类等级：\n公司：[XX有限公司]\n行业：[XX]\n沟通记录：\n[粘贴通话记录/拜访笔记]\n\n输出：等级+五维判定依据+建议跟进动作",
+     "帮我把今天拜访的5个客户做批量判客：\n1. XX公司：[简要描述]\n2. XX公司：[简要描述]\n...\n输出每人的等级+本周跟进优先级排序",
+     "这个客户我判为B类，但我不确定——帮我用五维模型重新评估：\n需求：[描述]\n预算：[描述]\n决策人：[描述]\n时间线：[描述]\n竞品：[描述]"
+   ]},
+
+  // ──────────────────────────────────────────────
+  // Stage 3: 可行性报告 (5)
+  // ──────────────────────────────────────────────
+  {id:"invest-calc",stage:3,icon:"💰",skill:"icbu-manager-report-skill",
+   name:"年投入测算",
+   desc:"根据客户行业/规模，自动匹配阿里国际站套餐，生成投入产出预估",
+   fields:[
+     {key:'industry',label:'行业',type:'input',default:'户外家具'},
+     {key:'capital',label:'注册资本(万)',type:'number',default:'500'},
+     {key:'exportAmount',label:'年出口额(万美金)',type:'number',default:'200'},
+   ],
+   steps:[
+     {title:"套餐匹配",detail:[
+       "根据客户规模匹配：基础版/标准版/金品",
+       "根据行业匹配广告预算建议（P3000/P6000/P10000）",
+       "计算年投入总额（套餐费+广告费+增值服务费）"
+     ]},
+     {title:"产出预估",detail:[
+       "同行业同规模商家平均询盘量/成交量",
+       "预估ROI：投入X万→预期成交Y万美金",
+       "对标同行标杆数据（脱敏后的真实案例）"
+     ]},
+     {title:"方案对比",detail:[
+       "提供2-3档方案对比（保守/标准/积极）",
+       "每档标注：投入/预期询盘/预期GMV/回本周期",
+       "推荐最优方案+理由"
+     ]},
+   ],
+   pitfall:"可行性报告以前每次从零写要2-3小时。现在AI 3分钟生成。但要注意：数据预估要保守，签约后兑现才是口碑。宁可超预期，不要承诺过高。",
+   tools:[
+     {name:"icbu-manager-report-skill",type:"skill",desc:"行业数据+套餐信息查询"},
+     {name:"FBI行业效果",type:"fbi",desc:"行业流量/成交国/效果数据"},
+   ],
+   prompts:[
+     "帮我做{industry}工厂的阿里国际站投入测算：注册资本{capital}万，年出口额约{exportAmount}万美金，推荐什么套餐+广告预算？预估ROI多少？",
+     "对比基础版/标准版/金品三个方案，做一份投入产出对比表，包含：年费、广告建议、预期询盘、预期GMV、回本周期"
+   ]},
+
+  {id:"case-match",stage:3,icon:"🏆",skill:"icbu-manager-report-skill",
+   name:"成功案例匹配",
+   desc:"从案例库中匹配同行业同规模的成功商家路径，展示如何做好平台",
+   fields:[
+     {key:'company',label:'客户公司名',type:'input',default:''},
+     {key:'industry',label:'行业',type:'input',default:'户外家具'},
+     {key:'scale',label:'企业规模',type:'select',options:['小微','中型','大型'],default:'中型'},
+   ],
+   steps:[
+     {title:"案例检索",detail:[
+       "按行业+规模+地域匹配最相似的标杆商家",
+       "优先选择：同行业 > 同规模 > 同地域",
+       "提取关键数据：合作年限/优品数/P值/GMV增长"
+     ]},
+     {title:"路径还原",detail:[
+       "标杆商家的入驻路径：第1月做什么→第3月→第6月",
+       "关键转折点：什么时候开始出单/什么时候GMV起飞",
+       "可复制的核心动作：选品策略/广告打法/团队配置"
+     ]},
+     {title:"方案植入",detail:[
+       "将案例数据植入可行性报告",
+       "「您的同行XX，去年通过国际站做了XX万美金」",
+       "让客户看到「别人做到了，我也可以」"
+     ]},
+   ],
+   pitfall:"案例匹配的核心不是炫耀数据，而是让客户看到「可复制的路径」。冯轩昂的做法：理解客户生意底层逻辑，不是背话术而是真正懂生意。",
+   tools:[
+     {name:"icbu-manager-report-skill",type:"skill",desc:"标杆商家数据查询"},
+   ],
+   prompts:[
+     "帮我找3个跟{company}同行业同规模（{scale}企业）的阿里国际站成功案例，包含：入驻时间、优品数增长、GMV增长曲线、关键成功动作",
+     "整理{industry}行业TOP5商家的成功路径，按时间线拆解：第1月→第3月→第6月各做了什么"
+   ]},
+
+  {id:"quote-gen",stage:3,icon:"📄",skill:"icbu-manager-report-skill",
+   name:"报价方案生成",
+   desc:"结合客户需求+当期政策，自动生成个性化报价方案PDF",
+   fields:[
+     {key:'company',label:'客户公司名',type:'input',default:''},
+     {key:'plan',label:'推荐套餐',type:'select',options:['基础版','标准版','金品'],default:'金品'},
+     {key:'ad',label:'广告档位',type:'select',options:['P3000','P6000','P10000'],default:'P6000'},
+     {key:'extra',label:'增值服务',type:'select',options:['保效','AWB','详情页装修','全部'],default:'保效'},
+   ],
+   steps:[
+     {title:"方案组装",detail:[
+       "套餐推荐（基础版/标准版/金品）+ 理由",
+       "广告预算建议 + 投放策略",
+       "增值服务选配（保效/AWB/详情页装修）",
+       "当期优惠政策叠加"
+     ]},
+     {title:"个性化定制",detail:[
+       "根据客户需求调整方案重点",
+       "价格敏感型 → 强调ROI和回本周期",
+       "效果导向型 → 强调保效和大客户增长",
+       "品牌导向型 → 强调品牌权益和流量扶持"
+     ]},
+     {title:"输出格式",detail:[
+       "PDF方案书（品牌化模板）",
+       "包含：投入明细/产出预估/案例对标/优惠政策",
+       "一页纸精华版（给老板看的）+ 详细版（给运营看的）"
+     ]},
+   ],
+   pitfall:"报价方案一定要当场算账——让客户看到投入X万，预期回报Y万，回本周期Z个月。数字比话术有说服力100倍。",
+   tools:[
+     {name:"icbu-manager-report-skill",type:"skill",desc:"套餐+政策+数据查询"},
+     {name:"pdf",type:"skill",desc:"PDF方案书生成"},
+   ],
+   prompts:[
+     "帮我生成{company}的阿里国际站报价方案：推荐{plan}+{ad}广告+{extra}，包含投入明细、预期产出、同行案例对标、当期优惠政策",
+     "做一份一页纸报价精华版，给{company}老板看，重点突出ROI和回本周期"
+   ]},
+
+  {id:"proposal-gen",stage:3,icon:"📑",skill:"alibaba-newbie-oversea-proposal",
+   name:"可行性报告一键生成",
+   desc:"输入行业名称，AI 3分钟生成完整出海创业策划书（投入测算+行业基准+成功案例+报价方案）",
+   fields:[
+     {key:'industry',label:'行业',type:'input',default:'户外家具'},
+     {key:'city',label:'城市',type:'input',default:'郑州'},
+     {key:'exportAmount',label:'年出口额(万美金)',type:'number',default:'200'},
+     {key:'scene',label:'用途',type:'select',options:['明天上门谈单','线上发送','会销展示'],default:'明天上门谈单'},
+   ],
+   steps:[
+     {title:"输入（极简模式）",detail:[
+       "只需提供：行业名称（如「户外家具」「储能设备」「五金配件」）",
+       "可选补充：客户公司名/年出口额/已有平台经验",
+       "AI自动联网补齐行业基准数据（市场规模/增速/TOP国家）"
+     ]},
+     {title:"AI自动生成（7大模块）",detail:[
+       "① 行业概况：全球市场规模+增长率+生命周期阶段",
+       "② 市场分析：TOP10出口国家+买家分布+采购旺季",
+       "③ 竞争格局：国内同行标杆+平台TOP商家数据",
+       "④ 投入测算：套餐推荐+广告预算+年投入明细",
+       "⑤ 产出预估：预期询盘量/GMV/ROI/回本周期",
+       "⑥ 成功案例：同行业同规模标杆路径还原",
+       "⑦ 风险提示：合规要求/季节性波动/汇率风险"
+     ]},
+     {title:"输出格式",detail:[
+       "HTML交互式报告（可在线浏览+分享）",
+       "包含数据图表+对标表格+可视化仪表盘",
+       "一页纸精华版（给老板看的决策摘要）",
+       "可直接在谈单现场用iPad/笔记本展示"
+     ]},
+   ],
+   pitfall:"可行性报告以前每次从零写要2-3小时。现在AI 3分钟生成。但数据预估要保守——签约后兑现才是口碑。宁可超预期，不要承诺过高。给客户看报告时，重点讲「同行怎么做的」而非「我们要卖什么」。",
+   tools:[
+     {name:"alibaba-newbie-oversea-proposal",type:"skill",desc:"出海创业策划书V4.0 — 行业名称即可生成完整报告"},
+     {name:"icbu-manager-report-skill",type:"skill",desc:"行业数据+套餐信息查询"},
+     {name:"dual-channel-market-research",type:"skill",desc:"双通道市场调研（B2B+C2C交叉验证）"},
+   ],
+   prompts:[
+     "帮我生成{industry}行业的出海创业策划书，客户是{city}的工厂，年出口额约{exportAmount}万美金",
+     "帮我生成{industry}行业的一页纸可行性报告精华版，重点突出市场规模、TOP国家、投入产出预估",
+     "帮我生成{industry}行业的完整可行性报告，包含投入测算+案例对标+报价方案，准备{scene}用"
+   ]},
+
+  {id:"itm-report",stage:3,icon:"📈",skill:"icbu-manager-report-skill",
+   name:"ITM行业研究报告",
+   desc:"上门谈单时向客户展示的「行业全景报告」— 用数据证明市场机会，让客户看到出海大势",
+   fields:[
+     {key:'industry',label:'行业',type:'input',default:'储能设备'},
+     {key:'scene',label:'用途',type:'select',options:['明天上门谈单','线上讲解','自我学习'],default:'明天上门谈单'},
+   ],
+   steps:[
+     {title:"报告结构（7大章节）",detail:[
+       "① 行业概述与生命周期：定义+子赛道+当前所处阶段",
+       "② 市场空间测算：全球规模(GW/GWh/USD)+增长率+区域分布",
+       "③ 产业链图谱：上中下游+附加值分布+中国企业优势环节",
+       "④ 竞争格局：全球TOP玩家+市场份额+壁垒评估矩阵",
+       "⑤ 驱动因素与风险：增长引擎+政策催化+潜在风险",
+       "⑥ 关键政策梳理：美国/欧盟/澳洲/中国等主要市场政策",
+       "⑦ 阿里国际站视角：平台供给+买家分布+询盘热词+运营红利"
+     ]},
+     {title:"谈单展示策略",detail:[
+       "开场用「市场空间」章节震撼客户：你的行业全球市场XX亿，增速XX%",
+       "用「买家分布」证明需求真实存在：你的产品在XX国家需求最旺",
+       "用「竞争格局」说明窗口期：现在入场还来得及，再晚就被同行占位",
+       "用「阿里国际站视角」证明平台价值：平台上你的品类询盘量XX条/月",
+       "收口：市场这么大+平台有流量+我们有方案 → 签约"
+     ]},
+     {title:"报告生成方式",detail:[
+       "方式一：使用已有行业报告（如储能/新能源/机械等预制报告）",
+       "方式二：输入行业名称，AI自动联网生成定制报告（约5-10分钟）",
+       "方式三：组合使用icbu-manager-report-skill查询行业数据+手动整合",
+       "输出为HTML交互式报告，支持在线浏览和离线查看"
+     ]},
+   ],
+   pitfall:"ITM报告是「谈单利器」而非「学术报告」。展示时不要从头讲到尾——挑3个最有冲击力的数据点（市场规模/增速/买家分布），用数据震撼客户，然后自然过渡到「你的企业怎么抓住这个机会」。记住：客户不关心行业有多好，关心的是「跟我有什么关系」。",
+   tools:[
+     {name:"icbu-manager-report-skill",type:"skill",desc:"行业流量/成交国/效果数据查询"},
+     {name:"FBI行业效果",type:"fbi",desc:"行业数据看板"},
+     {name:"dual-channel-market-research",type:"skill",desc:"双通道市场调研"},
+   ],
+   prompts:[
+     "帮我生成{industry}行业的ITM研究报告，包含：行业概述、市场空间测算、产业链图谱、竞争格局、驱动因素、关键政策、阿里国际站视角",
+     "帮我查{industry}行业在阿里国际站的数据：搜索热度TOP10国家、月度询盘量趋势、TOP卖家数据、运营红利",
+     "帮我准备{scene}用{industry}客户的ITM展示材料，挑选5个最有冲击力的数据点+展示话术"
+   ]},
+
+  // ──────────────────────────────────────────────
+  // Stage 4: 签约准备 (3)
+  // ──────────────────────────────────────────────
+  {id:"doc-checklist",stage:4,icon:"📋",
+   name:"资料清单自动发送",
+   desc:"客户确认意向后，AI自动推送所需材料清单",
+   fields:[
+     {key:'plan',label:'签约套餐',type:'select',options:['基础版','标准版','金品'],default:'金品'},
+   ],
+   steps:[
+     {title:"清单生成",detail:[
+       "营业执照副本（三合一）",
+       "法人身份证正反面",
+       "办公场地租赁证明/产权证明",
+       "银行账户信息（对公打款用）",
+       "特殊行业资质（如涉及食品/化工等）"
+     ]},
+     {title:"自动推送",detail:[
+       "签约意向确认后，自动发送清单到客户微信/邮箱",
+       "每项材料标注：格式要求（扫描件/照片）+注意事项",
+       "附带示例图（什么算合格材料）"
+     ]},
+     {title:"进度追踪",detail:[
+       "客户上传后自动核验完整性",
+       "缺项即时提醒补齐",
+       "全部齐备后触发下一步"
+     ]},
+   ],
+   pitfall:"资料不齐是签约环节最大的拖延原因。清单要在客户说「我签」的当场就发出去，趁热打铁。不要让客户回去慢慢准备——热度一降什么都拖。",
+   tools:[
+     {name:"Glowtide 对话",type:"qw",desc:"生成资料清单+注意事项"},
+   ],
+   prompts:[
+     "帮我生成一份阿里国际站{plan}签约所需材料清单，标注每项的格式要求和注意事项",
+   ]},
+
+  {id:"doc-verify",stage:4,icon:"✅",
+   name:"资料完整性核验",
+   desc:"客户上传后AI自动校验证照有效期、地址一致性，缺项即时提醒",
+   fields:[
+     {key:'license',label:'营业执照',type:'select',options:['已上传','未上传'],default:'已上传'},
+     {key:'idcard',label:'法人身份证',type:'select',options:['已上传','未上传'],default:'已上传'},
+     {key:'address',label:'地址证明',type:'select',options:['已上传','未上传'],default:'未上传'},
+     {key:'bank',label:'银行账户',type:'select',options:['已上传','未上传'],default:'未上传'},
+   ],
+   steps:[
+     {title:"自动校验",detail:[
+       "营业执照：有效期是否覆盖合同期、经营范围是否匹配",
+       "法人身份证：正反面齐全、有效期未过期",
+       "地址一致性：注册地 vs 实际经营地",
+       "银行账户：对公账户名与公司名一致"
+     ]},
+     {title:"问题反馈",detail:[
+       "缺项/不合格项自动生成补件清单",
+       "每项标注具体问题（过期/模糊/不一致）",
+       "推送补件指引给客户"
+     ]},
+     {title:"齐备确认",detail:[
+       "全部核验通过 → 自动触发签约流程",
+       "生成签约确认书",
+       "通知团队+主管"
+     ]},
+   ],
+   pitfall:"地址不一致是最常见的驳回原因。注册地和实际经营地不同的，需要额外提供租赁合同。提前提醒客户准备，避免签约流程卡壳。",
+   tools:[
+     {name:"Glowtide 对话",type:"qw",desc:"校验反馈+补件清单生成"},
+   ],
+   prompts:[
+     "帮我核验以下签约材料是否齐全：\n营业执照：{license}\n法人身份证：{idcard}\n地址证明：{address}\n银行账户：{bank}\n输出：缺项清单+补件指引",
+   ]},
+
+  {id:"payment-track",stage:4,icon:"💳",
+   name:"打款跟进闭环",
+   desc:"生成打款指引，实时追踪到款状态，到款即触发开通流程",
+   fields:[
+     {key:'company',label:'公司名',type:'input',default:''},
+     {key:'plan',label:'套餐',type:'select',options:['基础版','标准版','金品'],default:'金品'},
+     {key:'ad',label:'广告档位',type:'select',options:['P3000','P6000','P10000'],default:'P6000'},
+     {key:'amount',label:'合同总金额(元)',type:'number',default:''},
+   ],
+   steps:[
+     {title:"打款指引",detail:[
+       "生成打款信息：对公账户/金额/备注要求",
+       "附带打款注意事项（转账备注格式/到账时间）",
+       "支持分期付款的标注分期计划"
+     ]},
+     {title:"到款追踪",detail:[
+       "打款后实时追踪到账状态",
+       "到账后自动触发开通流程",
+       "通知客户经理+主管+开通团队"
+     ]},
+     {title:"开通闭环",detail:[
+       "账号开通+套餐激活",
+       "自动触发「初阶新商30天陪跑」流程",
+       "客户经理收到「新商入住任务清单」"
+     ]},
+   ],
+   pitfall:"打款不是终点——到款后24h内必须完成账号开通，48h内启动入住陪跑。客户付了钱但迟迟没开通，满意度会直线下降。",
+   tools:[
+     {name:"Glowtide 对话",type:"qw",desc:"打款指引+开通通知"},
+     {name:"onboard-junior-guide",type:"skill",desc:"到款后自动触发入住陪跑"},
+   ],
+   prompts:[
+     "帮我生成{company}的打款指引：{plan}套餐+{ad}广告，总计{amount}元，对公打款信息+注意事项",
+   ]},
+  {id:"key-push",stage:2,icon:"🔔",formType:"keypush",
+   name:"重点客户A/B定向推送",
+   desc:"A/B类重点客户定向提醒，一键推送到钉钉消息",
+   steps:[
+     {title:"录入重点客户",detail:[
+       "等级：A类（本月可签单）/ B类（本季度可签单）",
+       "填写公司名/联系人/下次跟进日期/关键动作",
+       "可批量添加多名客户"
+     ]},
+     {title:"选择推送方式",detail:[
+       "立即推送：生成提醒并直接发送钉钉消息",
+       "立即推送+定时：同步创建每日定时提醒任务",
+       "推送目标：钉钉群聊或钉钉个人"
+     ]},
+     {title:"一键启动",detail:[
+       "点击生成指令，Accio Work 自动调用钉钉能力发送",
+       "发送完成后回复结果（成功/失败原因）",
+       "所需权限全部授予，如缺连接会提示授权"
+     ]},
+   ],
+   pitfall:"A类客户的核心是「快」——24h内必须有人跟进。推送提醒不是发完就结束，收到钉钉消息后要立即安排电话/上门动作，并在次日复盘是否已触达。",
+   tools:[
+     {name:"钉钉(dws)",type:"qw",desc:"钉钉消息发送+日程提醒"},
+     {name:"customer-segmentation",type:"skill",desc:"ABCD分层校验"},
+     {name:"management-assistant",type:"skill",desc:"跟进提醒+日程管理"},
+   ],
+   prompts:[
+     "请使用「钉钉」能力，向[推送目标]发送今日重点客户提醒：\n- [A类] 郑州XX公司｜联系人：张总｜下次跟进：明日｜动作：已确认方案，24h内上门签单\n发送后回复发送结果。"
+   ]},
+  // ──────────────────────────────────────────────
+  // Stage 5: 新商家·上线前 (0-30天基建期)
+  // ──────────────────────────────────────────────
+  {id:"on-verify",stage:5,icon:"🪪",skill:"merchant-verify",
+   name:"实地认证+拉群",
+   desc:"完成实地认证拍照/视频，拉入客户服务群，类目/素材一次过关",
+   fields:[
+     {key:'merchant',label:'商家名称/旺铺链接',type:'input',default:''},
+     {key:'category',label:'一级类目',type:'input',default:''},
+     {key:'materialStatus',label:'认证素材状态',type:'select',options:['未开始','缺公司视频','缺案例包装','齐全'],default:'未开始'},
+   ],
+   steps:[
+     {title:"商家动作清单",detail:[
+       "□ 完成实地认证拍照/视频（拍拍）",
+       "□ 拉入客户服务群",
+       "□ 认证素材要点：①一级类目确定 ②公司信息+视频 ③案例+包装"
+     ]},
+     {title:"客户经理协助点",detail:[
+       "提前对接供应链拍档，确认类目准确性",
+       "审核素材完整性（素材不齐=认证返工=上线延误）"
+     ]},
+     {title:"对标标准",detail:[
+       "0-30天基建期 · 新手任务100% · TA+/ACP激活"
+     ]},
+   ],
+   pitfall:"素材不齐=认证返工=上线延误。拍档协同确认类目，素材逐项审核后再提交。对标：新手任务100%、TA+/ACP激活。",
+   tools:[
+     {name:"拍档协同",type:"fbi",desc:"对接供应链拍档确认类目与素材"},
+     {name:"merchant-verify",type:"skill",desc:"实地认证检查清单"},
+   ],
+   prompts:[
+     "帮我生成{merchant}的实地认证素材检查清单：一级类目确认、公司信息+视频、案例+包装，逐项标注当前状态（{materialStatus}）与补齐动作，输出给客户经理核对的Checklist",
+     "生成{merchant}「拉群+认证排期」跟进话术：联系商家确认拍摄时间，同步拍档，目标本周内完成实地认证"
+   ]},
+  {id:"on-company",stage:5,icon:"🏢",skill:"company-info-check",
+   name:"填写公司信息（100%）",
+   desc:"完整填写公司基本信息，确认信息完整度100%，避免影响认证与流量扶持",
+   fields:[
+     {key:'merchant',label:'商家名称',type:'input',default:''},
+     {key:'completeness',label:'当前完整度',type:'select',options:['60%','80%','90%','100%'],default:'80%'},
+   ],
+   steps:[
+     {title:"商家动作清单",detail:[
+       "□ 完整填写公司基本信息",
+       "□ 确认信息完整度 100%"
+     ]},
+     {title:"客户经理协助点",detail:[
+       "逐项核对公司信息，避免因缺失影响认证通过率与流量扶持"
+     ]},
+     {title:"对标标准",detail:["0-30天基建期 · 新手任务100%"]},
+   ],
+   pitfall:"公司信息缺失直接影响认证通过率与流量扶持。核验后补全，目标完整度100%。",
+   tools:[
+     {name:"生意助手",type:"qw",desc:"公司信息完整度自检"},
+     {name:"company-info-check",type:"skill",desc:"信息缺失项核验"},
+   ],
+   prompts:[
+     "帮我核验{merchant}的公司信息完整度（当前约{completeness}），逐项列出缺失项+补填指引，目标100%完整，输出给商家照做的清单"
+   ]},
+  {id:"on-decor",stage:5,icon:"🎨",skill:"ai-shop-decor",
+   name:"店铺装修（双端）→ 4.2分",
+   desc:"PC端+无线端双端装修完成，店铺评分≥4.2分",
+   fields:[
+     {key:'merchant',label:'商家名称',type:'input',default:''},
+     {key:'device',label:'装修端',type:'select',options:['PC端','无线端','双端'],default:'双端'},
+     {key:'score',label:'当前评分',type:'number',default:'4.2'},
+   ],
+   steps:[
+     {title:"商家动作清单",detail:[
+       "□ PC端装修完成",
+       "□ 无线端装修完成",
+       "□ 店铺评分 ≥ 4.2 分"
+     ]},
+     {title:"客户经理协助点",detail:[
+       "检查双端装修效果，评分未达4.2分时指导商家一键生成装修"
+     ]},
+     {title:"对标标准",detail:["0-30天基建期 · 高质量产品库搭建"]},
+   ],
+   pitfall:"双端缺一端、评分<4.2都会拉低店铺权重。未达标直接用AI一键生成装修。对标：评分≥4.2分。",
+   tools:[
+     {name:"AI店铺装修",type:"skill",desc:"一键生成双端装修"},
+     {name:"ai-shop-decor",type:"skill",desc:"装修评分检查清单"},
+   ],
+   prompts:[
+     "帮我检查{merchant}的店铺装修（{device}），当前评分{score}分；逐项列出未达标项，未达4.2分时给出AI一键装修方案+重点优化项"
+   ]},
+  {id:"on-publish",stage:5,icon:"📦",skill:"ai-smart-publish",
+   name:"发品 → 至少 100 个",
+   desc:"上线前完成首批发品≥100个，产品信息完整（标题/图/属性/价格）",
+   fields:[
+     {key:'merchant',label:'商家名称',type:'input',default:''},
+     {key:'industry',label:'行业',type:'input',default:''},
+     {key:'count',label:'首批发品目标',type:'number',default:'100'},
+   ],
+   steps:[
+     {title:"商家动作清单",detail:[
+       "□ 上线前完成首批发品 ≥ 100个",
+       "□ 产品信息完整（标题/图/属性/价格）"
+     ]},
+     {title:"客户经理协助点",detail:[
+       "用AI智能发品协助批量上品，确保首批发品质量与数量双达标"
+     ]},
+     {title:"对标标准",detail:["0-30天 · 30天发布4.5分品≥200个（起步≥100个）"]},
+   ],
+   pitfall:"首批发品质量比数量重要——4.5分品才是有效资产。对标：30天4.5分品≥200个，起步≥100个。",
+   tools:[
+     {name:"AI智能发品",type:"skill",desc:"批量上品+质量分优化"},
+     {name:"生意助手发品教学",type:"qw",desc:"发品教学指引"},
+   ],
+   prompts:[
+     "帮我为{merchant}制定首批发品计划：目标{count}个（{industry}行业优先），用AI智能发品批量上品，输出每日拆解表+4.5分品优化要点"
+   ]},
+  {id:"on-launch",stage:5,icon:"🚦",skill:"onboard-checklist",
+   name:"确认上线时间",
+   desc:"AliPay收款+物流模板+新手任务三项就绪后确认上线日期，同步拍档",
+   fields:[
+     {key:'merchant',label:'商家名称',type:'input',default:''},
+     {key:'alipay',label:'AliPay收款',type:'select',options:['未开通','已开通'],default:'未开通'},
+     {key:'logistics',label:'物流模板',type:'select',options:['未设置','已设置'],default:'未设置'},
+     {key:'task',label:'新手任务',type:'select',options:['未完成','已完成'],default:'未完成'},
+   ],
+   steps:[
+     {title:"商家动作清单",detail:[
+       "□ 开通 AliPay 收款",
+       "□ 设置物流模板",
+       "□ 完成新手任务"
+     ]},
+     {title:"客户经理协助点",detail:[
+       "三项全部就绪后，与商家确认上线日期并同步拍档（阿里收款/物流/任务三确认）"
+     ]},
+     {title:"对标标准",detail:["0-30天 · 基建破冰完成，开启智能流量扶持"]},
+   ],
+   pitfall:"AliPay/物流/新手任务三项缺一不可，全绿才定上线日，并同步拍档。对标：0-30天基建破冰完成、开启智能流量扶持。",
+   tools:[
+     {name:"生意助手新手任务",type:"qw",desc:"任务引导"},
+     {name:"onboard-checklist",type:"skill",desc:"上线三确认清单"},
+   ],
+   prompts:[
+     "帮我生成{merchant}的上线三确认清单：AliPay收款：{alipay}；物流模板：{logistics}；新手任务：{task}。输出缺项+建议上线日期，并同步拍档"
+   ]},
+  // ──────────────────────────────────────────────
+  // Stage 6: 新商家·上线后 (31-180天成长期)
+  // ──────────────────────────────────────────────
+  {id:"after-publish",stage:6,icon:"📈",skill:"ai-smart-publish",
+   name:"持续发布（每月300个）",
+   desc:"持续发布新品形成稳定产品库，30天4.5分品≥200个",
+   fields:[
+     {key:'merchant',label:'商家名称',type:'input',default:''},
+     {key:'monthly',label:'每月发品目标',type:'number',default:'300'},
+     {key:'qual',label:'4.5分品目标',type:'number',default:'200'},
+   ],
+   steps:[
+     {title:"商家动作清单",detail:[
+       "□ 持续发布新品，目标每月 300 个",
+       "□ 形成稳定产品库（30天4.5分品 ≥ 200个）"
+     ]},
+     {title:"客户经理协助点",detail:[
+       "按月拆解发品量，用AI批量上品+优化质量分，跟踪4.5分品达标进度"
+     ]},
+     {title:"对标标准",detail:["30天发品200+（4.5分品）；0-30天基建破冰开启智能流量扶持"]},
+   ],
+   pitfall:"发品断档=流量断崖。4.5分品≥200是硬指标，未达标按天拆解补品。对标：每月300个、30天4.5分品≥200。",
+   tools:[
+     {name:"AI智能发品",type:"skill",desc:"批量上品"},
+     {name:"AI美图&视频",type:"skill",desc:"素材制作"},
+   ],
+   prompts:[
+     "帮我制定{merchant}的月度持续发品计划：每月{monthly}个、30天4.5分品≥{qual}个，按月拆解到周，用AI批量上品+优化质量分，输出进度跟踪表"
+   ]},
+  {id:"after-kb",stage:6,icon:"🧠",skill:"ai-customer-manager",
+   name:"AI知识库完善（四大数字人）",
+   desc:"完善知识库（产品/公司/FAQ），开启四大数字人24小时自动接待",
+   fields:[
+     {key:'merchant',label:'商家名称',type:'input',default:''},
+     {key:'kbType',label:'知识库范围',type:'select',options:['产品','公司','FAQ','全部'],default:'全部'},
+     {key:'digitalHuman',label:'四大数字人',type:'select',options:['未开启','已开启'],default:'未开启'},
+   ],
+   steps:[
+     {title:"商家动作清单",detail:[
+       "□ 完善知识库内容（产品/公司/FAQ）",
+       "□ 开启四大数字人，24小时自动接待"
+     ]},
+     {title:"客户经理协助点",detail:[
+       "辅导商家把常见询盘问题录入知识库，开启四大数字人24h自动接待，提升询盘响应率"
+     ]},
+     {title:"对标标准",detail:["61-90天首单转化期 · AI接待助手+定制知识库"]},
+   ],
+   pitfall:"知识库不完善=数字人答非所问=询盘流失。先把高频问题喂进知识库再开四大数字人。对标：61-90天首单转化。",
+   tools:[
+     {name:"AI客户经理",type:"skill",desc:"接待助手"},
+     {name:"定制知识库",type:"skill",desc:"知识库搭建"},
+     {name:"四大数字人",type:"qw",desc:"24h自动接待"},
+   ],
+   prompts:[
+     "帮我为{merchant}完善AI知识库（{kbType}）：整理常见询盘问答模板并开启四大数字人（当前：{digitalHuman}），实现24小时自动接待，输出知识库导入内容+开启步骤"
+   ]},
+  {id:"after-window",stage:6,icon:"🪟",skill:"smart-window",
+   name:"橱窗设置（智能橱窗打开）",
+   desc:"打开智能橱窗，让流量聚焦优爆品",
+   fields:[
+     {key:'merchant',label:'商家名称',type:'input',default:''},
+     {key:'focus',label:'橱窗聚焦',type:'select',options:['优爆品','高转化品','新品'],default:'优爆品'},
+   ],
+   steps:[
+     {title:"商家动作清单",detail:[
+       "□ 打开智能橱窗",
+       "□ 让流量聚焦优爆品"
+     ]},
+     {title:"客户经理协助点",detail:[
+       "确认橱窗已开启，指导商家将优爆品放入橱窗，集中流量资源"
+     ]},
+     {title:"对标标准",detail:["120天优爆品 ≥ 20个（91-120天优爆品进化·流量聚焦）"]},
+   ],
+   pitfall:"橱窗没开=优爆品没有流量入口。对标：120天优爆品≥20个（91-120天流量聚焦）。",
+   tools:[
+     {name:"智能橱窗",type:"qw",desc:"后台橱窗设置"},
+     {name:"smart-window",type:"skill",desc:"橱窗选品建议"},
+   ],
+   prompts:[
+     "帮我检查{merchant}的智能橱窗：确认已打开，指导将{focus}放入橱窗集中流量，输出橱窗选品建议（目标120天优爆品≥20个）"
+   ]},
+  {id:"after-rfq",stage:6,icon:"📡",skill:"rfq-auto-manage",
+   name:"RFQ设置（AI智能体+商机）",
+   desc:"配置RFQ智能托管+商机订阅，系统自动识别并触达高意向买家",
+   fields:[
+     {key:'merchant',label:'商家名称',type:'input',default:''},
+     {key:'config',label:'配置项',type:'select',options:['RFQ智能托管','商机订阅/好友分组','全部'],default:'全部'},
+   ],
+   steps:[
+     {title:"商家动作清单",detail:[
+       "□ 配置RFQ智能托管",
+       "□ 开启商机订阅/好友分组",
+       "□ 实时触达买家"
+     ]},
+     {title:"客户经理协助点",detail:[
+       "协助配置RFQ智能托管与商机订阅，让系统自动识别并触达高意向买家"
+     ]},
+     {title:"对标标准",detail:["61-90天商机转化 · 首单破局（RFQ报价）"]},
+   ],
+   pitfall:"RFQ不托管=高意向买家流失。配置智能托管+商机订阅让系统自动触达。对标：61-90天商机转化、首单破局（RFQ报价）。",
+   tools:[
+     {name:"RFQ智能托管",type:"skill",desc:"商机自动触达"},
+     {name:"AW智能体配置",type:"qw",desc:"智能体配置"},
+   ],
+   prompts:[
+     "帮我配置{merchant}的RFQ商机体系（{config}）：RFQ智能托管+商机订阅，让系统自动识别高意向买家并实时触达，输出配置步骤+报价话术模板"
+   ]},
+  {id:"after-p4p",stage:6,icon:"📣",skill:"ai-marketing-assistant",
+   name:"开通广告（发品≥150后开启）",
+   desc:"发品达到150个后开通P4P广告，设置预算≥3000元/月并跟踪消耗",
+   fields:[
+     {key:'merchant',label:'商家名称',type:'input',default:''},
+     {key:'products',label:'当前发品数',type:'number',default:'150'},
+     {key:'budget',label:'月度预算(元)',type:'number',default:'3000'},
+   ],
+   steps:[
+     {title:"商家动作清单",detail:[
+       "□ 发品达到 150 个后开通P4P广告",
+       "□ 设置预算 ≥ 3000元/月"
+     ]},
+     {title:"客户经理协助点",detail:[
+       "发品达150个后第一时间推动开通P4P，设3000元/月预算并跟踪消耗"
+     ]},
+     {title:"对标标准",detail:["60天P4P消耗 ≥ 3000元；P4P预算 ≥ 3000/月"]},
+   ],
+   pitfall:"发品<150开P4P=浪费预算；开了不盯消耗=无效投放。对标：60天P4P消耗≥3000元、预算≥3000/月。",
+   tools:[
+     {name:"AI营销助手",type:"skill",desc:"出价优化"},
+     {name:"AW直通车计划",type:"qw",desc:"P4P计划管理"},
+   ],
+   prompts:[
+     "帮我为{merchant}制定P4P开通方案：当前发品{products}个（达标线150），月度预算{budget}元，输出开户步骤+出价策略+消耗追踪表（目标60天消耗≥3000元）"
+   ]},
+];
+
+// ═══════════════════════════════════════════════════
+// ROUTER & RENDERER
+// ═══════════════════════════════════════════════════
+function getRoute(){
+  const h=location.hash||'#/';
+  if(h==='#/'||h==='#') return {page:'home'};
+  if(h.startsWith('#/stage/')) return {page:'stage',id:+h.split('/')[2]};
+  if(h.startsWith('#/workflow/')) return {page:'workflow',id:h.split('/')[2]};
+  return {page:'home'};
+}
+
+function render(){
+  const r=getRoute();
+  const app=document.getElementById('app');
+  if(r.page==='home') renderHome(app);
+  else if(r.page==='stage') renderStage(app,r.id);
+  else if(r.page==='workflow') renderWorkflow(app,r.id);
+  window.scrollTo(0,0);
+}
+
+function renderHome(app){
+  const sc=STAGES.map(s=>({...s,count:WORKFLOWS.filter(w=>w.stage===s.id).length}));
+  app.innerHTML=`
+    <div class="header">
+      <h1><span>Glowtide</span> — AI工作台</h1>
+      <div class="meta">新签招商闭环 · ${WORKFLOWS.length}个工作流 · 谢颂声</div>
+    </div>
+
+    <div class="sec-title">四步闭环 · 全景</div>
+    <div class="pipeline">
+      ${STAGES.map((s,i)=>`
+        <div class="pipe-step" data-s="${s.id}" onclick="location.hash='#/stage/${s.id}'">
+          <div class="pipe-icon">${s.icon}</div>
+          <div class="pipe-name">0${s.id} ${s.name}</div>
+          <div class="pipe-desc">${s.desc.split('—')[1]?.trim()||s.desc}</div>
+        </div>
+        ${i<STAGES.length-1?'<div class="pipe-arrow">→</div>':''}
+      `).join('')}
+    </div>
+
+    <div class="sec-title">痛点 vs 解法</div>
+    <div class="compare-grid">
+      <div class="compare-card pain">
+        <h3>✗ 现状痛点</h3>
+        <ul>
+          <li>客户信息靠手动录入CRM，遗漏严重</li>
+          <li>判客标准不统一，A/B类全凭感觉</li>
+          <li>线索跟进无提醒，错过最佳窗口期</li>
+          <li>上门拜访无结构化记录，过程不可追溯</li>
+          <li>可行性报告每次从零写，耗时2-3小时</li>
+          <li>招商全流程断裂，无法闭环复盘</li>
+        </ul>
+      </div>
+      <div class="compare-card solution">
+        <h3>✓ AI Agent解法</h3>
+        <ul>
+          <li>智能抓取客户信息，自动入库CRM</li>
+          <li>AI判客模型，统一A/B/C类标准</li>
+          <li>自动跟进提醒，按策略定向触达</li>
+          <li>拜访记录结构化生成，一键归档</li>
+          <li>可行性报告模板化，3分钟生成</li>
+          <li>四步闭环数据打通，全程可追溯</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sec-title">四大阶段</div>
+    <div class="stage-grid">
+      ${sc.map(s=>`
+        <div class="stage-card" data-stage="${s.id}" onclick="location.hash='#/stage/${s.id}'">
+          <div class="num">STEP 0${s.id}</div>
+          <h2>${s.icon} ${s.name}</h2>
+          <p>${s.desc}</p>
+          <span class="wf-count">${s.count} 个工作流</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="sec-title">快捷入口</div>
+    <div class="quick-grid">
+      ${[
+        ['📞','公海池筛选','高意向号码优先','sea-pool'],
+        ['📱','自媒体获客','抖音/视频号/小红书','media-lead'],
+        ['📥','CRM录入','先富系统批量录入','crm-input'],
+        ['🎪','活动邀约','匹配活动+话术','event-invite'],
+        ['⚖️','判客全流程','五维判定AB类','judge-full'],
+        ['🔔','重点客户推送','A/B类钉钉定向提醒','key-push'],
+        ['🆕','上线前五件事','0-30天基建清单','on-verify'],
+        ['🚀','上线后五件事','31-180天起量清单','after-publish'],
+        ['💰','投入测算','3分钟出方案','invest-calc'],
+        ['📑','可行性报告','行业名称→完整报告','proposal-gen'],
+        ['📈','ITM行业报告','谈单展示利器','itm-report'],
+        ['📄','报价生成','个性化报价PDF','quote-gen'],
+        ['✅','资料核验','签约材料校验','doc-verify'],
+      ].map(([ic,nm,ds,wf])=>`
+        <div class="quick-item" onclick="location.hash='#/workflow/${wf}'">
+          <div class="qi-icon">${ic}</div>
+          <div class="qi-name">${nm}</div>
+          <div class="qi-desc">${ds}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderStage(app,stageId){
+  const stage=STAGES.find(s=>s.id===stageId);
+  const wfs=WORKFLOWS.filter(w=>w.stage===stageId);
+  app.innerHTML=`
+    <div class="header">
+      <h1><span>Glowtide</span> — AI工作台</h1>
+      <div class="meta">STEP 0${stage.id} · ${stage.name}</div>
+    </div>
+    <div class="nav-back" onclick="location.hash='#/'">← 返回首页</div>
+    <div style="margin-bottom:24px">
+      <span style="font-size:28px">${stage.icon}</span>
+      <h1 style="font-size:22px;font-weight:800;margin:6px 0">${stage.name}</h1>
+      <p style="color:var(--muted);font-size:14px">${stage.desc}</p>
+    </div>
+    <div class="wf-list">
+      ${wfs.map(w=>`
+        <div class="wf-card" data-stage="${w.stage}" onclick="location.hash='#/workflow/${w.id}'">
+          <div class="wf-icon">${w.icon}</div>
+          <div class="wf-info">
+            <h3>${w.name}</h3>
+            <p>${w.desc}</p>
+            ${w.skill?`<span style="font-size:10px;color:var(--purple);font-family:monospace;background:var(--purple-bg);padding:1px 6px;border-radius:3px;margin-top:3px;display:inline-block">/${w.skill}</span>`:''}
+          </div>
+          <div class="wf-arrow">→</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderWorkflow(app,wfId){
+  const wf=WORKFLOWS.find(w=>w.id===wfId);
+  if(!wf){app.innerHTML='<p>工作流未找到</p>';return;}
+  const stage=STAGES.find(s=>s.id===wf.stage);
+
+  // Find prev/next workflow for navigation
+  const stageWfs=WORKFLOWS.filter(w=>w.stage===wf.stage);
+  const curIdx=stageWfs.findIndex(w=>w.id===wfId);
+  const prevWf=curIdx>0?stageWfs[curIdx-1]:null;
+  const nextWf=curIdx<stageWfs.length-1?stageWfs[curIdx+1]:null;
+
+  // Find next stage's first workflow
+  const nextStage=STAGES.find(s=>s.id===wf.stage+1);
+  const nextStageFirstWf=nextStage?WORKFLOWS.find(w=>w.stage===nextStage.id):null;
+
+  app.innerHTML=`
+    <div class="header">
+      <h1><span>Glowtide</span> — AI工作台</h1>
+      <div class="meta">${stage.icon} ${stage.name}</div>
+    </div>
+    <div class="nav-back" onclick="location.hash='#/stage/${wf.stage}'">← ${stage.name}</div>
+    <div class="wf-detail">
+      <div class="wf-header">
+        <span class="tag" data-s="${wf.stage}">STEP 0${wf.stage} · ${stage.name}</span>
+        <h1>${wf.icon} ${wf.name}</h1>
+        <p class="desc">${wf.desc}</p>
+        ${wf.skill?`<div class="skill-badge" onclick="copyToClipboard('/${wf.skill}').then(()=>showToast('✅ 已复制 Glowtide Skill 指令：/${wf.skill}'))" title="点击复制 Glowtide Skill 调用指令">
+          <span style="font-weight:700">⚡ Skill:</span>
+          <code>/${wf.skill}</code>
+          <span style="font-size:10px;color:var(--dim);margin-left:4px">点击复制</span>
+        </div>`:''}
+      </div>
+
+      ${wf.steps.map((st,i)=>`
+        <div class="step-card" data-s="${wf.stage}">
+          <span class="step-num">STEP ${i+1}</span>
+          <h3>${st.title}</h3>
+          <ul>${st.detail.map(d=>`<li>${d}</li>`).join('')}</ul>
+        </div>
+      `).join('')}
+
+      ${wf.pitfall?`<div class="pitfall"><strong>⚠ 避坑提醒：</strong>${wf.pitfall}</div>`:''}
+
+      ${wfId==='judge-full'?`
+        <div class="sec-title">快速判客工具</div>
+        ${renderJudgeForm()}
+      `:''}
+
+      ${wfId==='media-lead'?`
+        <div class="sec-title">自媒体内容生成器</div>
+        ${renderMediaForm()}
+      `:''}
+
+      ${wfId==='crm-input'?`
+        <div class="sec-title">CRM客户录入表单</div>
+        ${renderCRMForm()}
+      `:''}
+
+      ${wfId==='key-push'?`
+        <div class="sec-title">重点客户 A/B 定向推送</div>
+        ${renderKeyPushForm()}
+      `:''}
+
+      ${wf.fields&&wf.fields.length?`
+        <div class="sec-title">📝 填写参数 · 让指令更精准</div>
+        ${renderWfFields(wf.fields)}
+      `:''}
+
+      <div class="sec-title">可用工具</div>
+      <div class="tool-grid">
+        ${wf.tools.map(t=>`
+          <div class="tool-item">
+            <div class="t-name">${t.name}</div>
+            <div class="t-desc">${t.desc}</div>
+            <span class="t-type ${t.type}">${{skill:'Skill',agent:'智能体',qw:'Glowtide',fbi:'FBI数据'}[t.type]}</span>
+          </div>
+        `).join('')}
+      </div>
+
+      ${wf.prompts&&wf.prompts.length?`
+        <div class="sec-title">一键启动 · 自动带入已填参数</div>
+        ${wf.prompts.map((p,i)=>`
+          <div class="prompt-box" id="pb-${i}">
+            <code>${escHtml(p)}</code>
+            <button class="launch-btn" onclick="launchPrompt(${i})">
+              <span class="ico">⚡</span> 一键启动
+            </button>
+          </div>
+        `).join('')}
+      `:''}
+
+      <div style="display:flex;justify-content:space-between;margin-top:32px;padding-top:20px;border-top:1px solid var(--border);gap:12px;flex-wrap:wrap">
+        ${prevWf?`<div class="nav-back" onclick="location.hash='#/workflow/${prevWf.id}'" style="margin:0">← ${prevWf.name}</div>`:'<div></div>'}
+        ${nextWf?`<div class="nav-back" onclick="location.hash='#/workflow/${nextWf.id}'" style="margin:0">${nextWf.name} →</div>`
+          :nextStageFirstWf?`<div class="nav-back" onclick="location.hash='#/workflow/${nextStageFirstWf.id}'" style="margin:0;color:var(--cyan)">进入下一步: ${nextStageFirstWf.name} →</div>`
+          :'<div></div>'}
+      </div>
+    </div>
+  `;
+  window._prompts=wf.prompts||[];
+  window._wfId=wf.id;
+  window._wfSkill=wf.skill||'';
+  previewPrompts();
+}
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function copyToClipboard(text){
+  return new Promise(res=>{
+    let done=false;
+    const finish=v=>{ if(!done){done=true;res(v);} };
+    // 方式A: 同步 execCommand（真实浏览器点击场景一次成功，立即返回）
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=text;
+      ta.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0';
+      document.body.appendChild(ta);
+      ta.focus();ta.select();
+      const ok=document.execCommand('copy');
+      document.body.removeChild(ta);
+      if(ok) return finish(true);
+    }catch(e){}
+    // 方式B: 异步 Clipboard API + 800ms 超时兜底（任何环境都不会挂死调用方）
+    let settled=false;
+    const fin2=v=>{ if(!settled){settled=true;finish(v);} };
+    try{
+      navigator.clipboard.writeText(text).then(()=>fin2(true)).catch(()=>fin2(false));
+    }catch(e){ fin2(false); }
+    setTimeout(()=>fin2(false),800);
+  });
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ═══════════════════════════════════════════════════
+// ACCIO DEEP LINK — 一键直接启动 Accio Work（零跳转版）
+// 原理：向 Accio Work 桌面端本地网关直发 deeplink 请求，
+//       全程不触发页面导航（修复旧版 iframe 唤起导致页面被顶白的问题）。
+// 通道1: POST http://localhost:4097/desktop/deeplink（CORS）
+// 通道2: 同端点 no-cors + text/plain 直发（无预检，照样执行）
+// 通道3: 应用未运行时 window.open('accio://chat/new?...') 唤起（新标签页，不离开当前页）
+// 同时调用方始终复制指令到剪贴板兜底。
+// ═══════════════════════════════════════════════════
+function launchAccio(prompt, source, skill){
+  try{
+    const launchId='wb_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
+    const sk=(typeof skill==='string'&&/^[A-Za-z0-9._-]+$/.test(skill))?skill:'';
+    const url='accio://chat/new?query='+encodeURIComponent(prompt)
+      +'&source='+encodeURIComponent(source||'AI工作台')
+      +'&launchId='+launchId
+      +(sk?'&skills='+encodeURIComponent(sk):'');
+    const payload={action:'query',launchId:launchId,query:prompt,source:source||'AI工作台'};
+    if(sk) payload.skills=sk;
+    const gw='http://localhost:4097/desktop/deeplink';
+    // 通道1: 本地网关 CORS 直发
+    fetch(gw,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+      .then(r=>{ if(!r.ok) throw new Error('gateway '+r.status); })
+      .catch(()=>{
+        // 通道2: no-cors + text/plain 直发（file:// 页面无预检，服务端照常执行）
+        fetch(gw,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
+          .catch(()=>{
+            // 通道3: 应用未运行 → 新标签页唤起系统协议（当前页面不受影响）
+            try{ window.open(url,'_blank'); }catch(e){ window.location.href=url; }
+          });
+      });
+    return true;
+  }catch(e){ return false; }
+}
+
+// ═══════════════════════════════════════════════════
+// WORKFLOW PARAMS — 参数填写 → 指令精准带入
+// ═══════════════════════════════════════════════════
+function renderWfFields(fields){
+  const rows=[];
+  for(let i=0;i<fields.length;i+=2){
+    const pair=fields.slice(i,i+2);
+    rows.push(`<div class="judge-row">${pair.map(f=>{
+      if(f.type==='select'){
+        return `<div class="judge-field">
+          <label>${f.label}</label>
+          <select data-key="${f.key}" onchange="previewPrompts()">${f.options.map(o=>`<option ${o===f.default?'selected':''}>${o}</option>`).join('')}</select>
+        </div>`;
+      }
+      if(f.type==='textarea'){
+        return `<div class="judge-field">
+          <label>${f.label}</label>
+          <textarea data-key="${f.key}" rows="3" placeholder="${f.placeholder||''}" oninput="previewPrompts()" style="background:#fff;border:1px solid var(--border2);border-radius:6px;padding:8px 12px;font-size:13px;color:var(--text);outline:none;font-family:inherit;resize:vertical">${f.default||''}</textarea>
+        </div>`;
+      }
+      return `<div class="judge-field">
+        <label>${f.label}</label>
+        <input data-key="${f.key}" type="${f.type||'text'}" value="${f.default||''}" placeholder="${f.placeholder||''}" oninput="previewPrompts()">
+      </div>`;
+    }).join('')}</div>`);
+  }
+  return `<div class="judge-panel" id="wf-params" style="margin-bottom:8px">
+    <div class="judge-legend" style="margin:0 0 10px"><span style="background:var(--blue-bg);color:var(--blue)">填写后指令自动带入，无需手改文案</span></div>
+    ${rows.join('')}
+  </div>`;
+}
+
+function substituteParams(p){
+  const panel=document.getElementById('wf-params');
+  if(!panel) return p;
+  panel.querySelectorAll('[data-key]').forEach(el=>{
+    const k=el.dataset.key;
+    const v=(el.value!==undefined?el.value:'').trim();
+    p=p.split('{'+k+'}').join(v);
+  });
+  return p;
+}
+
+function previewPrompts(){
+  const arr=window._prompts||[];
+  arr.forEach((p,i)=>{
+    const el=document.getElementById('pb-'+i);
+    if(!el) return;
+    const code=el.querySelector('code');
+    if(code) code.textContent=substituteParams(p);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// JUDGE FORM — Customer Inventory Table with AI Judgment
+// ═══════════════════════════════════════════════════
+function renderJudgeForm(){
+  const today=new Date().toISOString().slice(0,10);
+  return `
+  <div class="judge-panel" id="judge-panel">
+    <h3><span class="jp-icon">⚖️</span> 客户盘点 · 信息录入 & AI判客</h3>
+    <div class="judge-legend">
+      <span class="la">A类：本月可签单 / 已确认方案 / 无反对意见</span>
+      <span class="lb">B类：本季度可签单 / 已报方案 / 可解决的反对意见</span>
+      <span class="lc">C类：有明确外贸想法的客户</span>
+    </div>
+
+    <div class="judge-row">
+      <div class="judge-field">
+        <label>公司名</label>
+        <input type="text" id="jf-company" placeholder="如：河南伟云纺织有限公司">
+      </div>
+      <div class="judge-field">
+        <label>联系时间</label>
+        <input type="date" id="jf-contactDate" value="${today}">
+      </div>
+    </div>
+
+    <div class="judge-row">
+      <div class="judge-field">
+        <label>开发渠道</label>
+        <select id="jf-channel">
+          <option value="">— 请选择 —</option>
+          <option>公海池</option><option>抖音</option><option>招聘网站</option>
+          <option>工商新注册</option><option>本地进出口企业名录</option>
+          <option>转介绍</option><option>会销现场</option><option>电话开发</option><option>其他</option>
+        </select>
+      </div>
+      <div class="judge-field">
+        <label>客户情况</label>
+        <select id="jf-situation">
+          <option value="">— 请选择 —</option>
+          <option>初次了解，简单看了行业数据</option>
+          <option>已沟通需求，明确了产品方向</option>
+          <option>已报方案，客户在评估中</option>
+          <option>已确认方案，准备签约</option>
+          <option>已签约，进入入住阶段</option>
+          <option>暂无明确需求，仅了解</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="judge-row">
+      <div class="judge-field">
+        <label>是否加微信</label>
+        <div class="judge-checks" style="margin:0">
+          <label class="judge-check" onclick="toggleJudge(this,'jf-wechat')"><input type="radio" name="jf-wechat" value="是"> 是</label>
+          <label class="judge-check" onclick="toggleJudge(this,'jf-wechat')"><input type="radio" name="jf-wechat" value="否"> 否</label>
+        </div>
+      </div>
+      <div class="judge-field">
+        <label>是否上门</label>
+        <div class="judge-checks" style="margin:0">
+          <label class="judge-check" onclick="toggleJudge(this,'jf-visited')"><input type="radio" name="jf-visited" value="是"> 是</label>
+          <label class="judge-check" onclick="toggleJudge(this,'jf-visited')"><input type="radio" name="jf-visited" value="否"> 否</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="judge-row">
+      <div class="judge-field">
+        <label>回访情况</label>
+        <select id="jf-followup">
+          <option value="">— 请选择 —</option>
+          <option>已回访，客户反馈积极</option>
+          <option>已回访，客户仍在犹豫</option>
+          <option>已回访，客户明确拒绝</option>
+          <option>已回访，需要进一步了解判断</option>
+          <option>未回访</option>
+          <option>计划回访中</option>
+        </select>
+      </div>
+      <div class="judge-field">
+        <label>再跟进时间</label>
+        <select id="jf-nextDate">
+          <option value="">— 请选择 —</option>
+          <option>明天</option><option>本周内</option><option>下周</option>
+          <option>本月内</option><option>下月</option>
+          <option>邀约研修班/会销活动</option>
+          <option>暂无计划（进入培育池）</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="judge-btn" onclick="runJudge()">⚡ AI 判客 · 自动评级</button>
+    <div class="judge-result" id="judge-result"></div>
+  </div>`;
+}
+
+function toggleJudge(el,name){
+  // Radio-like toggle: deactivate siblings, activate this one
+  const parent=el.parentElement;
+  parent.querySelectorAll('.judge-check').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function runJudge(){
+  const company=document.getElementById('jf-company').value.trim();
+  if(!company){showToast('⚠ 请先填写公司名');return;}
+  const contactDate=document.getElementById('jf-contactDate').value||'未选择';
+  const channel=document.getElementById('jf-channel').value||'未选择';
+  const situation=document.getElementById('jf-situation').value||'未选择';
+  const wechat=document.querySelector('input[name="jf-wechat"]:checked');
+  const visited=document.querySelector('input[name="jf-visited"]:checked');
+  const followup=document.getElementById('jf-followup').value||'未选择';
+  const nextDate=document.getElementById('jf-nextDate').value||'未选择';
+
+  // Build the AI prompt with all form data + judgment criteria
+  const prompt=`请根据以下客户信息和判定标准，判定该客户的等级（A类/B类/C类），输出评级+判定依据+建议跟进动作。
+
+【客户信息】
+公司名：${company}
+联系时间：${contactDate}
+开发渠道：${channel}
+客户情况：${situation}
+是否加微信：${wechat?wechat.value:'未选择'}
+是否上门：${visited?visited.value:'未选择'}
+回访情况：${followup}
+再跟进时间：${nextDate}
+
+【判定标准】
+A类客户：本月可签单 / 已经确认方案 / 无反对意见
+B类客户：本季度可签单 / 已经报方案 / 可解决的反对意见
+C类客户：有明确外贸想法的客户
+
+【输出要求】
+1. 评级：A类 / B类 / C类
+2. 判定依据：结合客户情况逐条分析
+3. 建议跟进动作：具体可执行的下一步
+4. 一句话填写到客户盘点表的"评级"和"回访情况"列`;
+
+  // 直接启动 Accio Work（携带判客专属技能）+ 复制兜底
+  launchAccio(prompt,'客户判客','customer-segmentation');
+  copyToClipboard(prompt).then(ok=>{
+    const el=document.getElementById('judge-result');
+    el.className='judge-result show grade-b';
+    el.innerHTML=`
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="font-size:28px">🤖</div>
+        <div style="flex:1">
+          <div class="jr-label" style="color:var(--cyan)">AI 判客指令已生成并直接启动</div>
+          <div class="jr-criteria" style="margin-top:6px">
+            <strong>${company}</strong> · ${channel} · ${situation}<br>
+            微信: ${wechat?wechat.value:'-'} · 上门: ${visited?visited.value:'-'} · 回访: ${followup}<br>
+            下次跟进: ${nextDate}
+          </div>
+          <div class="jr-action" style="margin-top:8px">
+            <strong>已直接启动 Accio Work</strong> 判客（含完整客户信息+ABC判定标准）。<br>
+            若未自动弹出新对话，指令已复制到剪贴板，<kbd style="background:#eef1f6;border:1px solid #d5dbe5;color:#475569;border-radius:3px;padding:1px 6px;font-size:12px">⌘V</kbd> 粘贴 → <kbd style="background:#eef1f6;border:1px solid #d5dbe5;color:#475569;border-radius:3px;padding:1px 6px;font-size:12px">↵</kbd> 发送
+          </div>
+        </div>
+      </div>
+    `;
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// MEDIA FORM — Self-media content generator
+// ═══════════════════════════════════════════════════
+function renderMediaForm(){
+  return `
+  <div class="judge-panel" id="media-panel">
+    <h3><span class="jp-icon">📱</span> 自媒体内容生成器</h3>
+
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">发布平台</label>
+      <div class="judge-checks" style="margin:0" id="mf-platform">
+        <label class="judge-check active" onclick="selectMediaPlatform(this)"><input type="radio" name="mf-platform" value="douyin" checked> 🎬 抖音</label>
+        <label class="judge-check" onclick="selectMediaPlatform(this)"><input type="radio" name="mf-platform" value="shipinhao"> 📺 视频号</label>
+        <label class="judge-check" onclick="selectMediaPlatform(this)"><input type="radio" name="mf-platform" value="xiaohongshu"> 📕 小红书</label>
+      </div>
+    </div>
+
+    <div class="judge-row">
+      <div class="judge-field">
+        <label>行业</label>
+        <input type="text" id="mf-industry" placeholder="如：户外家具、储能设备、五金配件">
+      </div>
+      <div class="judge-field">
+        <label>所在城市</label>
+        <input type="text" id="mf-city" placeholder="如：郑州、苏州、杭州">
+      </div>
+    </div>
+
+    <div class="judge-row" id="mf-length-row">
+      <div class="judge-field">
+        <label>视频时长</label>
+        <select id="mf-length">
+          <option>30秒</option><option selected>60秒</option><option>90秒</option>
+          <option>2分钟</option><option>3分钟</option>
+        </select>
+      </div>
+      <div class="judge-field">
+        <label>内容类型</label>
+        <select id="mf-style">
+          <option>口播干货</option><option>情景剧</option><option>产品展示</option>
+          <option>客户见证</option><option>行业趋势解读</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">获客方式</label>
+      <div class="judge-checks" style="margin:0" id="mf-method">
+        <label class="judge-check active" onclick="selectMediaMethod(this)"><input type="radio" name="mf-method" value="organic" checked> 🌊 自然流量</label>
+        <label class="judge-check" onclick="selectMediaMethod(this)"><input type="radio" name="mf-method" value="conference"> 🎪 会销投流</label>
+      </div>
+    </div>
+
+    <div id="mf-conference-section" style="display:none">
+      <div class="judge-row">
+        <div class="judge-field">
+          <label>活动日期</label>
+          <input type="date" id="mf-eventDate">
+        </div>
+        <div class="judge-field">
+          <label>活动地点</label>
+          <input type="text" id="mf-eventLocation" placeholder="如：郑州·科技城 / 杭州·阿里巴巴滨江园区">
+        </div>
+      </div>
+      <div class="judge-row">
+        <div class="judge-field" style="grid-column:span 2">
+          <label>活动主题</label>
+          <input type="text" id="mf-eventTheme" placeholder="如：一个人怎么做外贸 / 一部电脑一个手机撬动全球外贸">
+        </div>
+      </div>
+    </div>
+
+    <div class="judge-row">
+      <div class="judge-field" style="grid-column:span 2">
+        <label>目标人群（可选）</label>
+        <input type="text" id="mf-audience" placeholder="如：制造业老板、外贸工厂、跨境卖家">
+      </div>
+    </div>
+
+    <button class="judge-btn" onclick="runMediaGen()">⚡ 生成内容 & 复制到剪贴板</button>
+    <div class="judge-result" id="media-result"></div>
+  </div>`;
+}
+
+function selectMediaPlatform(el){
+  el.parentElement.querySelectorAll('.judge-check').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  // Show/hide video length based on platform
+  const val=el.querySelector('input').value;
+  const lengthRow=document.getElementById('mf-length-row');
+  if(val==='xiaohongshu'){
+    lengthRow.style.display='none';
+  }else{
+    lengthRow.style.display='';
+  }
+}
+
+function selectMediaMethod(el){
+  el.parentElement.querySelectorAll('.judge-check').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const val=el.querySelector('input').value;
+  document.getElementById('mf-conference-section').style.display=val==='conference'?'':'none';
+}
+
+function runMediaGen(){
+  const platform=document.querySelector('input[name="mf-platform"]:checked')?.value||'douyin';
+  const industry=document.getElementById('mf-industry').value.trim();
+  const city=document.getElementById('mf-city').value.trim();
+  const length=document.getElementById('mf-length').value;
+  const style=document.getElementById('mf-style').value;
+  const method=document.querySelector('input[name="mf-method"]:checked')?.value||'organic';
+  const eventDate=document.getElementById('mf-eventDate').value;
+  const eventLocation=document.getElementById('mf-eventLocation').value.trim();
+  const eventTheme=document.getElementById('mf-eventTheme').value.trim();
+  const audience=document.getElementById('mf-audience').value.trim();
+
+  if(!industry){showToast('⚠ 请填写行业');return;}
+  if(!city){showToast('⚠ 请填写所在城市');return;}
+  if(method==='conference'&&!eventDate){showToast('⚠ 会销投流需填写活动日期');return;}
+
+  const platformNames={douyin:'抖音',shipinhao:'视频号',xiaohongshu:'小红书'};
+  const pName=platformNames[platform];
+  const methodDesc=method==='organic'?'自然流量获客（行业干货+痛点共鸣）':'会销投流（活动引流+限时稀缺）';
+
+  // Build platform-specific style instructions
+  let styleGuide='';
+  if(platform==='douyin'){
+    styleGuide=`【写作风格要求】
+你是一位拥有10年以上经验的资深抖音博主、拍摄者及文案撰写者。请遵循以下规则：
+- 开头3秒必须有强钩子（数据冲击/痛点共鸣/反常识）
+- 口语化表达，每句话不超过15个字
+- 节奏快，信息密度高，不说废话
+- 结尾有明确CTA（关注/私信/评论）
+- 标注拍摄动作、表情、字幕重点
+- 避免「保证赚钱」「月入X万」等绝对化用语（抖音限流词）`;
+  } else if(platform==='shipinhao'){
+    styleGuide=`【写作风格要求】
+你是一位拥有10年以上经验的资深视频号运营专家。请遵循以下规则：
+- 风格偏商务、专业、可信赖
+- 开头用问题引入或数据展示
+- 中间讲干货+案例（不超过3个点）
+- 结尾引导关注+留言互动
+- 适合35-55岁商务人群观看
+- 避免过度营销感，重在价值输出`;
+  } else {
+    styleGuide=`【写作风格要求】
+你是一位拥有10年以上经验的资深小红书运营，擅长种草文案。请遵循以下规则：
+- 标题要有emoji+数字+痛点词（如「做外贸3年，终于找到靠谱平台😭」）
+- 第一人称视角，口语化，像朋友分享
+- 分段清晰，善用emoji分隔段落
+- 自然植入产品信息（不超过20%篇幅）
+- 结尾引导收藏+关注+评论区互动
+- 配图建议：实拍/对比图/数据截图`;
+  }
+
+  // Build conference info block
+  let conferenceBlock='';
+  if(method==='conference'){
+    conferenceBlock=`
+【会销活动信息】（必须融入内容）
+- 活动日期：${eventDate}
+- 活动地点：${city}${eventLocation?'·'+eventLocation:''}
+- 活动主题：${eventTheme||'外贸交流峰会'}
+- 内容要求：自然引出活动价值，制造稀缺感（名额有限/限时免费），引导私信或评论报名`;
+  }
+
+  // Output format
+  let outputFormat='';
+  if(platform==='xiaohongshu'){
+    outputFormat=`【输出格式】
+1. 标题（3个备选，含emoji）
+2. 正文（800-1200字，分段+emoji）
+3. 话题标签（10个，含行业+平台热词）
+4. 配图建议（5张，标注每张内容）
+5. 发布时间建议`;
+  } else {
+    outputFormat=`【输出格式】
+1. 视频标题（3个备选）
+2. 完整脚本（按时间轴：[00:00-00:03] 钩子 → [00:03-00:XX] 正文 → [结尾] CTA）
+3. 拍摄建议（场景/镜头/后期）
+4. BGM风格建议
+5. 话题标签（10个）
+6. 发布时间建议`;
+  }
+
+  const prompt=`请帮我创作一篇${pName}内容。
+
+【基本信息】
+平台：${pName}
+行业：${industry}
+城市：${city}
+${platform!=='xiaohongshu'?'视频时长：'+length:''}
+内容类型：${platform==='xiaohongshu'?'图文种草文案':style}
+获客方式：${methodDesc}
+${audience?'目标人群：'+audience:''}
+${conferenceBlock}
+
+${styleGuide}
+
+${outputFormat}
+
+【重要提醒】
+- 内容必须围绕「${industry}」行业，不要泛泛而谈
+- 融入「${city}」本地元素，增加真实感
+- ${method==='conference'?'核心目的是为活动引流，内容要自然引出活动':'核心目的是吸引潜在客户关注，建立专业信任'}
+- 所有内容必须合规，避免广告法违规词和平台限流词`;
+
+  launchAccio(prompt,'自媒体内容生成',window._wfSkill||'');
+  copyToClipboard(prompt).then(ok=>{
+    const el=document.getElementById('media-result');
+    el.className='judge-result show grade-b';
+    el.innerHTML=`
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="font-size:28px">${platform==='douyin'?'🎬':platform==='shipinhao'?'📺':'📕'}</div>
+        <div style="flex:1">
+          <div class="jr-label" style="color:var(--cyan)">${pName}内容生成指令已直接启动</div>
+          <div class="jr-criteria" style="margin-top:6px">
+            <strong>${industry}</strong> · ${city} · ${method==='conference'?'会销投流':'自然流量'}<br>
+            ${platform!=='xiaohongshu'?length+' · '+style+' · ':''}${audience||'通用人群'}
+            ${method==='conference'?'<br>活动：'+eventDate+' · '+(eventLocation||city)+' · '+(eventTheme||'外贸峰会'):''}
+          </div>
+          <div class="jr-action" style="margin-top:8px">
+            <strong>已直接启动 Accio Work</strong>（含${pName}风格指南+合规要求+${method==='conference'?'会销活动信息':'自然流量策略'}）<br>
+            若未自动弹出新对话，指令已复制到剪贴板，<kbd style="background:#eef1f6;border:1px solid #d5dbe5;color:#475569;border-radius:3px;padding:1px 6px;font-size:12px">⌘V</kbd> 粘贴 → <kbd style="background:#eef1f6;border:1px solid #d5dbe5;color:#475569;border-radius:3px;padding:1px 6px;font-size:12px">↵</kbd> 发送
+          </div>
+        </div>
+      </div>`;
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// CRM FORM — Customer batch input for 先富系统
+// ═══════════════════════════════════════════════════
+function renderCRMForm(){
+  return `
+  <div class="judge-panel" id="crm-panel">
+    <h3><span class="jp-icon">📥</span> CRM客户录入（先富系统）</h3>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">
+      将公海/私海之外的新客户录入到 <strong style="color:var(--text)">crm.alibaba.com</strong> 先富系统。<br>
+      录入后自动进入你的 <strong style="color:var(--green)">私海</strong>。手机号自动补0086，公司名空时自动转「姓名+电话」格式。
+    </div>
+
+    <div id="crm-rows">
+      <div class="crm-row" data-idx="0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:700;color:var(--cyan);background:var(--cyan-bg);padding:2px 8px;border-radius:4px">客户 1</span>
+          <button onclick="removeCRMRow(this)" style="display:none;background:var(--red-bg);border:1px solid rgba(239,68,68,.3);color:var(--red);font-size:11px;padding:1px 8px;border-radius:4px;cursor:pointer">删除</button>
+        </div>
+        <div class="judge-row">
+          <div class="judge-field">
+            <label>姓名</label>
+            <input type="text" class="crm-name" placeholder="联系人姓名">
+          </div>
+          <div class="judge-field">
+            <label>电话</label>
+            <input type="tel" class="crm-phone" placeholder="11位手机号" maxlength="11">
+          </div>
+        </div>
+        <div class="judge-row">
+          <div class="judge-field">
+            <label>公司名（可留空）</label>
+            <input type="text" class="crm-company" placeholder="公司全称，留空=个人">
+          </div>
+          <div class="judge-field">
+            <label>信用代码</label>
+            <select class="crm-credit">
+              <option value="无">暂无社会统一信用代码</option>
+              <option value="有">有信用代码</option>
+            </select>
+            <input type="text" class="crm-credit-code" placeholder="统一社会信用代码" style="display:none;margin-top:6px">
+          </div>
+        </div>
+        <div class="judge-row">
+          <div class="judge-field" style="grid-column:span 2">
+            <label>地址</label>
+            <div style="display:flex;gap:8px">
+              <select class="crm-province" onchange="updateCRMCities(this)" style="flex:1">
+                <option>河南</option><option>河北</option><option>山东</option><option>湖北</option><option>广东</option><option>浙江</option><option>江苏</option><option>其他</option>
+              </select>
+              <select class="crm-city" style="flex:1">
+                <option>郑州</option>
+              </select>
+              <select class="crm-district" style="flex:1">
+                <option>郑州</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button onclick="addCRMRow()" style="background:var(--bg2);border:1px dashed var(--border2);color:var(--muted);font-size:12px;padding:6px 14px;border-radius:6px;cursor:pointer">+ 添加客户</button>
+    </div>
+
+    <button class="judge-btn" onclick="runCRMGen()">⚡ 生成录入指令 & 复制到剪贴板</button>
+    <div class="judge-result" id="crm-result"></div>
+  </div>`;
+}
+
+const CRM_CITY_MAP={
+  '河南':['郑州','洛阳','开封','新乡','许昌','南阳','信阳','周口','商丘','驻马店','焦作','安阳','濮阳','漯河','平顶山','鹤壁','三门峡','济源'],
+  '河北':['石家庄','唐山','保定','廊坊','邯郸','秦皇岛','沧州','邢台','衡水','张家口','承德'],
+  '山东':['济南','青岛','烟台','潍坊','临沂','淄博','威海','济宁','泰安','德州','聊城','滨州','菏泽','枣庄','日照','东营'],
+  '湖北':['武汉','宜昌','襄阳','荆州','黄石','十堰','荆门','鄂州','孝感','黄冈','咸宁','随州'],
+  '广东':['广州','深圳','东莞','佛山','中山','珠海','惠州','汕头','江门','湛江','茂名','肇庆','揭阳','梅州','清远','韶关'],
+  '浙江':['杭州','宁波','温州','金华','台州','绍兴','嘉兴','湖州','衢州','丽水','舟山'],
+  '江苏':['南京','苏州','无锡','常州','南通','徐州','扬州','镇江','泰州','盐城','淮安','连云港','宿迁'],
+  '其他':['其他城市'],
+};
+
+function updateCRMCities(select){
+  const province=select.value;
+  const cities=CRM_CITY_MAP[province]||['其他城市'];
+  const row=select.closest('.crm-row');
+  const citySelect=row.querySelector('.crm-city');
+  const districtSelect=row.querySelector('.crm-district');
+  citySelect.innerHTML=cities.map(c=>`<option>${c}</option>`).join('');
+  districtSelect.innerHTML=`<option>${cities[0]}</option>`;
+}
+
+function addCRMRow(){
+  const container=document.getElementById('crm-rows');
+  const idx=container.children.length;
+  const div=document.createElement('div');
+  div.className='crm-row';
+  div.dataset.idx=idx;
+  div.innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <span style="font-size:12px;font-weight:700;color:var(--cyan);background:var(--cyan-bg);padding:2px 8px;border-radius:4px">客户 ${idx+1}</span>
+      <button onclick="removeCRMRow(this)" style="background:var(--red-bg);border:1px solid rgba(239,68,68,.3);color:var(--red);font-size:11px;padding:1px 8px;border-radius:4px;cursor:pointer">删除</button>
+    </div>
+    <div class="judge-row">
+      <div class="judge-field">
+        <label>姓名</label>
+        <input type="text" class="crm-name" placeholder="联系人姓名">
+      </div>
+      <div class="judge-field">
+        <label>电话</label>
+        <input type="tel" class="crm-phone" placeholder="11位手机号" maxlength="11">
+      </div>
+    </div>
+    <div class="judge-row">
+      <div class="judge-field">
+        <label>公司名（可留空）</label>
+        <input type="text" class="crm-company" placeholder="公司全称，留空=个人">
+      </div>
+      <div class="judge-field">
+        <label>信用代码</label>
+        <select class="crm-credit">
+          <option value="无">暂无社会统一信用代码</option>
+          <option value="有">有信用代码</option>
+        </select>
+        <input type="text" class="crm-credit-code" placeholder="统一社会信用代码" style="display:none;margin-top:6px">
+      </div>
+    </div>
+    <div class="judge-row">
+      <div class="judge-field" style="grid-column:span 2">
+        <label>地址</label>
+        <div style="display:flex;gap:8px">
+          <select class="crm-province" onchange="updateCRMCities(this)" style="flex:1">
+            <option>河南</option><option>河北</option><option>山东</option><option>湖北</option><option>广东</option><option>浙江</option><option>江苏</option><option>其他</option>
+          </select>
+          <select class="crm-city" style="flex:1">
+            <option>郑州</option>
+          </select>
+          <select class="crm-district" style="flex:1">
+            <option>郑州</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">`;
+  container.appendChild(div);
+  // Show delete buttons on all rows when >1
+  container.querySelectorAll('.crm-row').forEach(r=>{
+    const btn=r.querySelector('button[onclick*="removeCRMRow"]');
+    if(btn) btn.style.display=container.children.length>1?'':'none';
+  });
+}
+
+function removeCRMRow(btn){
+  const row=btn.closest('.crm-row');
+  row.remove();
+  const container=document.getElementById('crm-rows');
+  // Re-number
+  container.querySelectorAll('.crm-row').forEach((r,i)=>{
+    r.dataset.idx=i;
+    r.querySelector('span').textContent='客户 '+(i+1);
+    const delBtn=r.querySelector('button[onclick*="removeCRMRow"]');
+    if(delBtn) delBtn.style.display=container.children.length>1?'':'none';
+  });
+}
+
+function runCRMGen(){
+  const rows=document.querySelectorAll('#crm-rows .crm-row');
+  const customers=[];
+  let valid=true;
+
+  rows.forEach((row,i)=>{
+    const name=row.querySelector('.crm-name').value.trim();
+    const phone=row.querySelector('.crm-phone').value.trim();
+    const company=row.querySelector('.crm-company').value.trim();
+    const creditSelect=row.querySelector('.crm-credit').value;
+    const creditCode=row.querySelector('.crm-credit-code').value.trim();
+    const province=row.querySelector('.crm-province').value;
+    const city=row.querySelector('.crm-city').value;
+    const district=row.querySelector('.crm-district').value;
+
+    if(!name||!phone){
+      showToast(`⚠ 客户${i+1}: 姓名和电话不能为空`);
+      valid=false;
+      return;
+    }
+    if(phone.length!==11||!/^\d+$/.test(phone)){
+      showToast(`⚠ 客户${i+1}: 电话必须为11位数字`);
+      valid=false;
+      return;
+    }
+
+    customers.push({
+      name,phone,
+      companyName:company||'个人',
+      creditCode:creditSelect==='有'&&creditCode?creditCode:'无',
+      address:`${province}-${city}-${district}`
+    });
+  });
+
+  if(!valid||customers.length===0) return;
+
+  // Build prompt
+  const isSingle=customers.length===1;
+  let prompt='';
+  if(isSingle){
+    const c=customers[0];
+    prompt=`请使用 cgs-batch-input 技能，帮我把以下客户录入先富系统：
+
+姓名：${c.name}
+电话：0086${c.phone}
+公司名：${c.companyName}
+信用代码：${c.creditCode}
+地址：${c.address}
+
+录入要求：
+1. 手机号已补全0086国际区号
+2. 公司名为「个人」时，系统自动转为「${c.name}${c.phone}」格式
+3. 信用代码为「无」时选择「暂无社会统一信用代码」
+4. 录入私海
+5. 地址级联选择：${c.address.replace(/-/g,' → ')}`;
+  } else {
+    const table=customers.map((c,i)=>`| ${i+1} | ${c.name} | 0086${c.phone} | ${c.companyName} | ${c.creditCode} | ${c.address} |`).join('\n');
+    prompt=`请使用 cgs-batch-input 技能，帮我批量录入以下 ${customers.length} 个客户到先富系统：
+
+| # | 姓名 | 电话 | 公司名 | 信用代码 | 地址 |
+|---|------|------|--------|---------|------|
+${table}
+
+录入要求：
+1. 所有手机号已补全0086国际区号
+2. 公司名为「个人」时自动转为「姓名+电话」格式
+3. 信用代码为「无」的选「暂无社会统一信用代码」
+4. 全部录入私海
+  5. 逐条执行，遇到重复/失败记录结果`;
+  }
+
+  launchAccio(prompt,'CRM客户录入','cgs-batch-input');
+  copyToClipboard(prompt).then(ok=>{
+    const el=document.getElementById('crm-result');
+    el.className='judge-result show grade-b';
+    el.innerHTML=`
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="font-size:28px">📥</div>
+        <div style="flex:1">
+          <div class="jr-label" style="color:var(--cyan)">${isSingle?'单条':'批量'}录入指令已直接启动（${customers.length}个客户）</div>
+          <div class="jr-criteria" style="margin-top:6px">
+            ${customers.map(c=>`<strong>${c.name}</strong> · ${c.phone} · ${c.companyName} · ${c.address}`).join('<br>')}
+          </div>
+          <div class="jr-action" style="margin-top:8px">
+            <strong>已直接启动 Accio Work</strong>（含 cgs-batch-input 录入指令）<br>
+            若未自动弹出新对话，指令已复制到剪贴板，<kbd style="background:#eef1f6;border:1px solid #d5dbe5;color:#475569;border-radius:3px;padding:1px 6px;font-size:12px">⌘V</kbd> 粘贴 → <kbd style="background:#eef1f6;border:1px solid #d5dbe5;color:#475569;border-radius:3px;padding:1px 6px;font-size:12px">↵</kbd> 发送
+          </div>
+        </div>
+      </div>`;
+  });
+}
+
+// Credit code toggle
+document.addEventListener('change',function(e){
+  if(e.target.classList.contains('crm-credit')){
+    const codeInput=e.target.parentElement.querySelector('.crm-credit-code');
+    if(codeInput) codeInput.style.display=e.target.value==='有'?'':'none';
+  }
+});
+
+function launchPrompt(idx){
+  const prompt=substituteParams(window._prompts[idx]);
+  if(!prompt) return;
+  const box=document.getElementById('pb-'+idx);
+  const btn=box.querySelector('.launch-btn');
+
+  // 同步直发启动（本地网关，零跳转），携带本工作流专属 skill
+  launchAccio(prompt,'AI工作台',window._wfSkill||'');
+  btn.classList.add('launched');
+  btn.innerHTML='<span class="ico">✅</span> 已启动 Accio Work';
+  showToast('✅ 已发送至 Accio Work（本地通道，页面不跳转）');
+  setTimeout(()=>{
+    btn.classList.remove('launched');
+    btn.innerHTML='<span class="ico">⚡</span> 一键启动';
+  },4000);
+
+  // 非阻塞复制兜底：若未收到指令，可 ⌘V 粘贴补发
+  copyToClipboard(prompt);
+}
+
+// ═══════════════════════════════════════════════════
+// KEY PUSH — A/B重点客户 钉钉定向推送
+// ═══════════════════════════════════════════════════
+function renderKeyPushForm(){
+  return `
+  <div class="judge-panel" id="key-panel">
+    <h3><span class="jp-icon">🔔</span> 重点客户 A/B类 · 定向提醒推送</h3>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">
+      针对 <strong style="color:var(--blue)">A类（本月可签）</strong> 与 <strong style="color:var(--gold)">B类（本季度可签）</strong> 客户生成定向提醒，一键推送到 <strong style="color:var(--orange)">钉钉消息</strong>。<br>
+      执行时所需权限全部授予；如钉钉未连接，会提示您先完成授权。
+    </div>
+    <div class="judge-row">
+      <div class="judge-field">
+        <label>推送方式</label>
+        <select id="kp-method">
+          <option value="immediate" selected>立即推送提醒</option>
+          <option value="schedule">立即推送 + 设置每日定时提醒</option>
+        </select>
+      </div>
+      <div class="judge-field">
+        <label>推送目标类型</label>
+        <select id="kp-target-type">
+          <option>钉钉群聊</option>
+          <option>钉钉个人/私聊</option>
+        </select>
+      </div>
+    </div>
+    <div class="judge-row">
+      <div class="judge-field">
+        <label>目标名称</label>
+        <input type="text" id="kp-target" placeholder="群名或联系人，留空由AI确认">
+      </div>
+      <div class="judge-field">
+        <label>提醒口径</label>
+        <select id="kp-tone">
+          <option selected>正式商务</option>
+          <option>简洁直接</option>
+          <option>带紧迫感（今日内回复）</option>
+        </select>
+      </div>
+    </div>
+    <div id="kp-rows">
+      <div class="kp-row">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:700;color:var(--blue);background:var(--blue-bg);padding:2px 8px;border-radius:4px">客户 1</span>
+          <button onclick="removeKeyRow(this)" style="display:none;background:var(--red-bg);border:1px solid rgba(217,83,79,.3);color:var(--red);font-size:11px;padding:1px 8px;border-radius:4px;cursor:pointer">删除</button>
+        </div>
+        <div class="judge-row">
+          <div class="judge-field"><label>等级</label><select class="kp-level"><option>A类</option><option>B类</option></select></div>
+          <div class="judge-field"><label>公司名</label><input class="kp-company" placeholder="公司全称"></div>
+        </div>
+        <div class="judge-row">
+          <div class="judge-field"><label>联系人</label><input class="kp-contact" placeholder="姓名/职务"></div>
+          <div class="judge-field"><label>下次跟进</label><input type="date" class="kp-date"></div>
+        </div>
+        <div class="judge-row">
+          <div class="judge-field" style="grid-column:span 2"><label>关键动作 / 备注</label><input class="kp-note" placeholder="如：已确认方案，24h内上门签单"></div>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button onclick="addKeyRow()" style="background:var(--bg2);border:1px dashed var(--border2);color:var(--muted);font-size:12px;padding:6px 14px;border-radius:6px;cursor:pointer">+ 添加客户</button>
+    </div>
+    <button class="judge-btn" onclick="runKeyPush()">🔔 生成推送指令 & 一键启动</button>
+    <div class="judge-result" id="key-result"></div>
+  </div>`;
+}
+
+function addKeyRow(){
+  const container=document.getElementById('kp-rows');
+  const idx=container.children.length;
+  const div=document.createElement('div');
+  div.className='kp-row';
+  div.innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <span style="font-size:12px;font-weight:700;color:var(--blue);background:var(--blue-bg);padding:2px 8px;border-radius:4px">客户 ${idx+1}</span>
+      <button onclick="removeKeyRow(this)" style="background:var(--red-bg);border:1px solid rgba(217,83,79,.3);color:var(--red);font-size:11px;padding:1px 8px;border-radius:4px;cursor:pointer">删除</button>
+    </div>
+    <div class="judge-row">
+      <div class="judge-field"><label>等级</label><select class="kp-level"><option>A类</option><option>B类</option></select></div>
+      <div class="judge-field"><label>公司名</label><input class="kp-company" placeholder="公司全称"></div>
+    </div>
+    <div class="judge-row">
+      <div class="judge-field"><label>联系人</label><input class="kp-contact" placeholder="姓名/职务"></div>
+      <div class="judge-field"><label>下次跟进</label><input type="date" class="kp-date"></div>
+    </div>
+    <div class="judge-row">
+      <div class="judge-field" style="grid-column:span 2"><label>关键动作 / 备注</label><input class="kp-note" placeholder="如：已确认方案，24h内上门签单"></div>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">`;
+  container.appendChild(div);
+  container.querySelectorAll('.kp-row').forEach(r=>{
+    const btn=r.querySelector('button[onclick*="removeKeyRow"]');
+    if(btn) btn.style.display=container.children.length>1?'':'none';
+  });
+}
+
+function removeKeyRow(btn){
+  const row=btn.closest('.kp-row');
+  row.remove();
+  const container=document.getElementById('kp-rows');
+  container.querySelectorAll('.kp-row').forEach((r,i)=>{
+    r.querySelector('span').textContent='客户 '+(i+1);
+    const delBtn=r.querySelector('button[onclick*="removeKeyRow"]');
+    if(delBtn) delBtn.style.display=container.children.length>1?'':'none';
+  });
+}
+
+function runKeyPush(){
+  const method=document.getElementById('kp-method').value;
+  const targetType=document.getElementById('kp-target-type').value;
+  const target=document.getElementById('kp-target').value.trim();
+  const tone=document.getElementById('kp-tone').value;
+  const rows=document.querySelectorAll('#kp-rows .kp-row');
+  const customers=[];
+  let valid=true;
+  rows.forEach((row,i)=>{
+    const level=row.querySelector('.kp-level').value;
+    const company=row.querySelector('.kp-company').value.trim();
+    const contact=row.querySelector('.kp-contact').value.trim();
+    const date=row.querySelector('.kp-date').value;
+    const note=row.querySelector('.kp-note').value.trim();
+    if(!company&&!contact){showToast('⚠ 客户'+(i+1)+': 请至少填写公司名或联系人');valid=false;return;}
+    customers.push({level,company,contact,date,note});
+  });
+  if(!valid) return;
+  if(!customers.length){showToast('⚠ 请至少添加一名重点客户');return;}
+
+  const today=new Date().toISOString().slice(0,10);
+  const list=customers.map((c,i)=>`${i+1}. [${c.level}] ${c.company||c.contact}｜联系人：${c.contact||'-'}｜下次跟进：${c.date||'未定'}｜动作：${c.note||'正常跟进'}`).join('\n');
+  const prompt=`请使用「钉钉」能力（dws/钉钉插件），${method==='schedule'?'立即发送提醒并同步创建每日定时提醒任务':'发送'}以下重点客户定向提醒。
+
+【推送目标】${targetType}${target?'：'+target:'（如未指定，请先向我确认目标群/联系人）'}
+【提醒口径】${tone}
+【发送时间】${method==='schedule'?'现在 + 每天上午9:00定时推送':'立即'}
+
+【提醒内容】
+🔔 重点客户（A/B类）定向提醒 · ${today}
+${list}
+
+【执行要求】
+1. 先发送标题「今日重点客户提醒」，再逐条列出客户与跟进动作，语气${tone}；
+2. ${method==='schedule'?'在 Accio Work 中为每名客户创建每日定时提醒任务（建议每天上午9:00），并同步在钉钉推送今日清单':'无需创建定时任务'};
+3. 发送完成后回复：发送成功 / 失败原因；
+4. 使用钉钉所需权限全部授予；如钉钉连接缺失，提示用户先完成授权。`;
+
+  launchAccio(prompt,'重点客户推送','dws');
+  copyToClipboard(prompt).then(ok=>{
+    const el=document.getElementById('key-result');
+    el.className='judge-result show grade-b';
+    el.innerHTML=`
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="font-size:28px">🔔</div>
+        <div style="flex:1">
+          <div class="jr-label" style="color:var(--cyan)">重点客户推送指令已生成并直接启动</div>
+          <div class="jr-criteria" style="margin-top:6px">
+            ${customers.length} 名重点客户 · ${targetType}${target?'：'+target:''} · ${method==='schedule'?'立即+每日定时':'立即推送'}<br>
+            <strong>${customers.map(c=>'['+c.level+'] '+(c.company||c.contact)).join('、')}</strong>
+          </div>
+          <div class="jr-action" style="margin-top:8px">
+            <strong>已直接启动 Accio Work</strong>（含钉钉推送指令+权限要求）。<br>
+            若未自动弹出，指令已复制到剪贴板，<kbd style="background:#eef1f6;border:1px solid #d5dbe5;color:#475569;border-radius:3px;padding:1px 6px;font-size:12px">⌘V</kbd> 粘贴 → <kbd style="background:#eef1f6;border:1px solid #d5dbe5;color:#475569;border-radius:3px;padding:1px 6px;font-size:12px">↵</kbd> 发送
+          </div>
+        </div>
+      </div>`;
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+window.addEventListener('hashchange',render);
+render();
+</script>
+</body>
+</html>
