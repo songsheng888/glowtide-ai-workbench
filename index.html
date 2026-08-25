@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Glowtide — AI工作台</title>
+<title>Glowtide · AI工作台 — 新签招商+新商家上线</title>
+<meta name="description" content="招商团队AI工作台：30个工作流，一键启动直达 Accio Work">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -203,6 +205,76 @@ a:hover{text-decoration:underline}
   .stage-grid{grid-template-columns:1fr}
   .tool-grid{grid-template-columns:1fr}
   .quick-grid{grid-template-columns:repeat(2,1fr)}
+}
+/* ═══ v3 迭代：阶段5/6配色 · 环境徽章 · 搜索筛选 · 步骤勾选 · 收藏 · 复制 · 可达性 ═══ */
+.pipe-step[data-s="5"] .pipe-icon{background:var(--blue-bg)}
+.pipe-step[data-s="6"] .pipe-icon{background:var(--gold-bg)}
+.stage-card[data-stage="5"]::before{background:var(--blue)}
+.stage-card[data-stage="6"]::before{background:var(--gold)}
+.stage-card[data-stage="5"] .num{color:var(--blue)}
+.stage-card[data-stage="6"] .num{color:var(--gold)}
+.stage-card[data-stage="5"] .wf-count{background:var(--blue-bg);color:var(--blue)}
+.stage-card[data-stage="6"] .wf-count{background:var(--gold-bg);color:var(--gold)}
+.wf-card[data-stage="5"] .wf-icon{background:var(--blue-bg);color:var(--blue)}
+.wf-card[data-stage="6"] .wf-icon{background:var(--gold-bg);color:var(--gold)}
+.wf-header .tag[data-s="5"]{background:var(--blue-bg);color:var(--blue)}
+.wf-header .tag[data-s="6"]{background:var(--gold-bg);color:var(--gold)}
+.step-card[data-s="5"] .step-num{background:var(--blue)}
+.step-card[data-s="6"] .step-num{background:var(--gold)}
+
+/* 环境状态徽章 */
+.env-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;background:var(--bg2);border:1px solid var(--border);color:var(--muted);cursor:default}
+.env-badge.ok{background:var(--green-bg);border-color:rgba(63,169,120,.35);color:var(--green)}
+.env-badge.warn{background:var(--orange-bg);border-color:rgba(232,137,46,.35);color:var(--orange)}
+.env-badge .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.env-badge.pending .dot{animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.3}}
+
+/* 搜索与筛选 */
+.search-bar{margin:6px 0 0}
+.search-box{width:100%;background:#fff;border:1px solid var(--border2);border-radius:10px;padding:11px 16px;font-size:14px;color:var(--text);outline:none;transition:border .2s;box-shadow:inset 0 1px 2px rgba(15,23,42,.04)}
+.search-box:focus{border-color:var(--blue)}
+.stage-filter{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+.filter-chip{font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;background:var(--card);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:.15s}
+.filter-chip:hover{border-color:var(--border2);color:var(--text)}
+.filter-chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.search-tip{font-size:12px;color:var(--dim);margin:6px 0 0}
+.empty{text-align:center;color:var(--dim);font-size:13px;padding:36px 0}
+
+/* 步骤勾选与进度 */
+.step-card li{cursor:pointer;user-select:none;display:flex;gap:8px;align-items:flex-start;border-radius:6px;padding:2px 4px;transition:background .12s}
+.step-card li:hover{background:var(--card2)}
+.step-card li.done{color:var(--dim);text-decoration:line-through}
+.step-card li .ck{flex-shrink:0;width:15px;height:15px;border:1.5px solid var(--border2);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#fff;margin-top:2px;transition:.15s}
+.step-card li.done .ck{background:var(--green);border-color:var(--green)}
+.step-card li.done .ck::after{content:'✓'}
+.step-progress{display:flex;align-items:center;gap:10px;margin:10px 0 2px}
+.step-progress .bar{flex:1;height:6px;border-radius:3px;background:var(--bg2);overflow:hidden}
+.step-progress .fill{height:100%;border-radius:3px;background:var(--blue);transition:width .3s}
+.step-progress .txt{font-size:11px;color:var(--dim);font-weight:600;white-space:nowrap}
+
+/* 复制按钮 & 收藏 */
+.copy-btn{display:inline-flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border2);color:var(--muted);font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;margin-top:8px;margin-left:8px;transition:.15s}
+.copy-btn:hover{border-color:var(--blue);color:var(--blue)}
+.fav-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:var(--card);border:1px solid var(--border);font-size:16px;cursor:pointer;transition:.15s}
+.fav-btn:hover{border-color:var(--gold)}
+.fav-btn.on{background:var(--gold-bg);border-color:rgba(223,160,60,.4)}
+
+/* 可达性 & 微交互 */
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+button{cursor:pointer}
+.wf-done-badge{font-size:10px;font-weight:600;color:var(--green);background:var(--green-bg);padding:1px 8px;border-radius:10px;margin-top:3px;display:inline-block}
+
+/* 移动端打磨 */
+@media(max-width:640px){
+  .header{flex-wrap:wrap;gap:10px}
+  .env-badge{font-size:11px;padding:4px 10px}
+  .wf-header h1{font-size:20px}
+  .prompt-box{padding:12px}
+  .step-card{padding:14px 16px}
+  .quick-item{padding:12px 8px}
+  .stage-card{padding:16px 18px}
+  .wf-detail h1{font-size:20px}
 }
 </style>
 </head>
@@ -1275,13 +1347,35 @@ function render(){
 
 function renderHome(app){
   const sc=STAGES.map(s=>({...s,count:WORKFLOWS.filter(w=>w.stage===s.id).length}));
+  const favs=getFavs();
+  const favWfs=WORKFLOWS.filter(w=>favs.includes(w.id));
   app.innerHTML=`
     <div class="header">
       <h1><span>Glowtide</span> — AI工作台</h1>
-      <div class="meta">新签招商闭环 · ${WORKFLOWS.length}个工作流 · 谢颂声</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="env-badge pending" id="env-badge"><span class="dot"></span>检测运行环境…</span>
+        <div class="meta">${WORKFLOWS.length}个工作流 · 新签招商+新商家上线</div>
+      </div>
     </div>
 
-    <div class="sec-title">四步闭环 · 全景</div>
+    <div class="search-bar">
+      <input class="search-box" id="wf-search" placeholder="🔍 搜索工作流：判客 / RFQ / 发品 / 报价 / 打款 / 认证…" oninput="doSearch(this.value)">
+    </div>
+    <div class="stage-filter">
+      <span class="filter-chip active" data-f="0" onclick="setFilter(this)">全部</span>
+      ${STAGES.map(s=>`<span class="filter-chip" data-f="${s.id}" onclick="setFilter(this)">${s.icon} ${s.name}</span>`).join('')}
+    </div>
+    <div class="search-tip" id="search-tip">共 ${WORKFLOWS.length} 个工作流 · 输入关键词或点阶段筛选快速定位</div>
+    <div class="wf-list" id="search-results" style="display:none"></div>
+    <div class="empty" id="search-empty" style="display:none">未找到匹配的工作流，换个关键词试试</div>
+
+    ${favWfs.length?`
+      <div class="sec-title">⭐ 我的收藏</div>
+      <div class="quick-grid">
+        ${favWfs.map(w=>`<div class="quick-item" onclick="location.hash='#/workflow/${w.id}'"><div class="qi-icon">${w.icon}</div><div class="qi-name">${w.name}</div><div class="qi-desc">${(w.desc||'').split('—')[0]}</div></div>`).join('')}
+      </div>`:''}
+
+    <div class="sec-title">${STAGES.length}大阶段 · 全景</div>
     <div class="pipeline">
       ${STAGES.map((s,i)=>`
         <div class="pipe-step" data-s="${s.id}" onclick="location.hash='#/stage/${s.id}'">
@@ -1319,7 +1413,7 @@ function renderHome(app){
       </div>
     </div>
 
-    <div class="sec-title">四大阶段</div>
+    <div class="sec-title">阶段总览</div>
     <div class="stage-grid">
       ${sc.map(s=>`
         <div class="stage-card" data-stage="${s.id}" onclick="location.hash='#/stage/${s.id}'">
@@ -1356,6 +1450,8 @@ function renderHome(app){
       `).join('')}
     </div>
   `;
+  window._wfFilter=0;
+  checkEnv();
 }
 
 function renderStage(app,stageId){
@@ -1380,6 +1476,7 @@ function renderStage(app,stageId){
             <h3>${w.name}</h3>
             <p>${w.desc}</p>
             ${w.skill?`<span style="font-size:10px;color:var(--purple);font-family:monospace;background:var(--purple-bg);padding:1px 6px;border-radius:3px;margin-top:3px;display:inline-block">/${w.skill}</span>`:''}
+            ${wfDoneBadge(w.id)}
           </div>
           <div class="wf-arrow">→</div>
         </div>
@@ -1419,13 +1516,18 @@ function renderWorkflow(app,wfId){
           <code>/${wf.skill}</code>
           <span style="font-size:10px;color:var(--dim);margin-left:4px">点击复制</span>
         </div>`:''}
+      <div style="display:flex;align-items:center;gap:6px;margin-top:10px">
+        <button class="fav-btn ${isFav(wf.id)?'on':''}" id="fav-btn" onclick="toggleFav('${wf.id}')">${isFav(wf.id)?'★':'☆'}</button>
+        <span style="font-size:11px;color:var(--dim)">收藏后出现在首页「⭐ 我的收藏」</span>
+      </div>
       </div>
 
       ${wf.steps.map((st,i)=>`
-        <div class="step-card" data-s="${wf.stage}">
+        <div class="step-card" data-s="${wf.stage}" id="step-${i}">
           <span class="step-num">STEP ${i+1}</span>
           <h3>${st.title}</h3>
-          <ul>${st.detail.map(d=>`<li>${d}</li>`).join('')}</ul>
+          <ul>${st.detail.map((d,j)=>`<li id="li-${i}-${j}" class="${isStepDone(wf.id,i,j)?'done':''}" onclick="toggleStep('${wf.id}',${i},${j})"><span class="ck"></span><span>${d}</span></li>`).join('')}</ul>
+          <div class="step-progress"><div class="bar"><div class="fill" style="width:${stepPct(wf.id,i)}%"></div></div><span class="txt">${stepDoneCount(wf.id,i)}/${st.detail.length}</span></div>
         </div>
       `).join('')}
 
@@ -1472,9 +1574,12 @@ function renderWorkflow(app,wfId){
         ${wf.prompts.map((p,i)=>`
           <div class="prompt-box" id="pb-${i}">
             <code>${escHtml(p)}</code>
+            <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap">
             <button class="launch-btn" onclick="launchPrompt(${i})">
               <span class="ico">⚡</span> 一键启动
             </button>
+            <button class="copy-btn" onclick="copyPromptText(${i})">📋 复制指令</button>
+            </div>
           </div>
         `).join('')}
       `:''}
@@ -2466,10 +2571,117 @@ ${list}
 }
 
 // ═══════════════════════════════════════════════════
+// v3: 搜索 / 筛选 / 步骤勾选 / 收藏 / 环境检测 / 复制 / 错误保护
+// ═══════════════════════════════════════════════════
+function doSearch(q){
+  q=(q||'').trim().toLowerCase();
+  const res=document.getElementById('search-results');
+  const empty=document.getElementById('search-empty');
+  const tip=document.getElementById('search-tip');
+  if(!res||!tip) return;
+  if(!q){
+    res.style.display='none'; empty.style.display='none';
+    tip.textContent='共 '+WORKFLOWS.length+' 个工作流 · 输入关键词或点阶段筛选快速定位';
+    return;
+  }
+  const f=window._wfFilter||0;
+  let list=WORKFLOWS.filter(w=>w.name.toLowerCase().includes(q)||(w.desc||'').toLowerCase().includes(q)||(w.skill||'').toLowerCase().includes(q)||(w.tools||[]).some(t=>t.name.toLowerCase().includes(q)));
+  if(f) list=list.filter(w=>w.stage===f);
+  if(!list.length){ empty.style.display=''; res.style.display='none'; tip.textContent='没有匹配的工作流'; return; }
+  empty.style.display='none'; res.style.display='';
+  res.innerHTML=`<div class="sec-title" style="margin-top:0">搜索结果 · ${list.length} 个</div>
+    <div class="wf-list">${list.map(w=>`
+      <div class="wf-card" data-stage="${w.stage}" onclick="location.hash='#/workflow/${w.id}'">
+        <div class="wf-icon">${w.icon}</div>
+        <div class="wf-info"><h3>${w.name}</h3><p>${w.desc}</p>${w.skill?`<span style="font-size:10px;color:var(--purple);font-family:monospace;background:var(--purple-bg);padding:1px 6px;border-radius:3px;margin-top:3px;display:inline-block">/${w.skill}</span>`:''}${wfDoneBadge(w.id)}</div>
+        <div class="wf-arrow">→</div>
+      </div>`).join('')}</div>`;
+  tip.textContent='找到 '+list.length+' 个工作流';
+}
+function setFilter(el){
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  window._wfFilter=+el.dataset.f||0;
+  const box=document.getElementById('wf-search');
+  if(box&&box.value.trim()) doSearch(box.value);
+}
+function copyPromptText(idx){
+  copyToClipboard(substituteParams(window._prompts[idx]||'')).then(()=>showToast('✅ 指令已复制到剪贴板'));
+}
+function stepKey(wfId,i){return 'gt_steps_'+wfId+'_'+i}
+function getSteps(wfId,i){try{return JSON.parse(localStorage.getItem(stepKey(wfId,i))||'[]')}catch(e){return []}}
+function isStepDone(wfId,i,j){return getSteps(wfId,i).indexOf(j)>=0}
+function stepDoneCount(wfId,i){return getSteps(wfId,i).length}
+function stepPct(wfId,i){
+  const wf=WORKFLOWS.find(w=>w.id===wfId);
+  if(!wf||!wf.steps[i]) return 0;
+  return Math.round(getSteps(wfId,i).length/wf.steps[i].detail.length*100);
+}
+function toggleStep(wfId,i,j){
+  const arr=getSteps(wfId,i);
+  const pos=arr.indexOf(j);
+  if(pos>=0) arr.splice(pos,1); else arr.push(j);
+  localStorage.setItem(stepKey(wfId,i),JSON.stringify(arr));
+  const li=document.getElementById('li-'+i+'-'+j);
+  if(li) li.classList.toggle('done',pos<0);
+  const card=document.getElementById('step-'+i);
+  if(card){
+    const fill=card.querySelector('.fill'), txt=card.querySelector('.txt');
+    const wf=WORKFLOWS.find(w=>w.id===wfId);
+    if(fill) fill.style.width=stepPct(wfId,i)+'%';
+    if(txt&&wf) txt.textContent=stepDoneCount(wfId,i)+'/'+wf.steps[i].detail.length;
+  }
+}
+function wfStepTotal(id){
+  const wf=WORKFLOWS.find(w=>w.id===id);
+  if(!wf) return {done:0,total:0};
+  let done=0,total=0;
+  wf.steps.forEach((st,i)=>{total+=st.detail.length;done+=getSteps(id,i).length;});
+  return {done,total};
+}
+function wfDoneBadge(id){
+  const {done,total}=wfStepTotal(id);
+  return done>0?`<span class="wf-done-badge">✓ ${done}/${total} 完成</span>`:'';
+}
+function getFavs(){try{return JSON.parse(localStorage.getItem('gt_favs')||'[]')}catch(e){return []}}
+function isFav(id){return getFavs().indexOf(id)>=0}
+function toggleFav(id){
+  const a=getFavs(), pos=a.indexOf(id);
+  if(pos>=0) a.splice(pos,1); else a.push(id);
+  localStorage.setItem('gt_favs',JSON.stringify(a));
+  const b=document.getElementById('fav-btn');
+  if(b){ b.classList.toggle('on',pos<0); b.textContent=pos<0?'★':'☆'; }
+  showToast(pos<0?'✅ 已收藏（首页「我的收藏」可查看）':'已取消收藏');
+}
+let envTimer=null;
+function checkEnv(){
+  const b=document.getElementById('env-badge');
+  if(!b) return;
+  b.className='env-badge pending';
+  b.innerHTML='<span class="dot"></span>检测运行环境…';
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),1800);
+  fetch('http://localhost:4097/health',{signal:ctrl.signal,mode:'no-cors'})
+    .then(()=>{ clearTimeout(t); b.className='env-badge ok'; b.innerHTML='<span class="dot"></span>Accio Work 已连接 · 可一键启动'; })
+    .catch(()=>{ clearTimeout(t); b.className='env-badge warn'; b.innerHTML='<span class="dot"></span>未检测到 Accio Work · 请用「复制指令」兜底'; });
+}
+window.addEventListener('error',e=>{
+  if(document.getElementById('err-bar')) return;
+  const d=document.createElement('div');
+  d.id='err-bar';
+  d.style.cssText='position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-size:12px;padding:8px 16px;border-radius:8px;z-index:9998;max-width:90%;box-shadow:0 6px 20px rgba(217,83,79,.3)';
+  d.textContent='⚠ 页面出现异常：'+(e.message||'未知错误');
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),6000);
+});
+
+// ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
 window.addEventListener('hashchange',render);
 render();
+checkEnv();
+setInterval(checkEnv,30000);
 </script>
 </body>
 </html>
